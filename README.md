@@ -5,10 +5,10 @@
 The basic premise of this tool is to be an implementaion of [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter).
 
 It works by accessing the ccd-data-store-api as the system user, grabbing and filtering all cases, and then migrating the filtered cases.
-To perform the migration there needs to be an event defined in the consuming case type that is defined with the ID `migrateCase`, this is defined 
+To perform the migration there needs to be an event defined in the consuming case type that is defined with the ID `migrateCase`, this is defined
 [here](https://github.com/hmcts/fpl-ccd-configuration/blob/bc67b4f1590e0d5999abad30819c8f5a7fc0e391/ccd-definition/CaseEvent/CareSupervision/MultiState.json#L5)
 in the FPL repo.
-This event is then triggered by the `CaseMigrationProcessor` defined in the [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter), 
+This event is then triggered by the `CaseMigrationProcessor` defined in the [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter),
 and as it is a CCD event it can have the standard CCD hooks, i.e. `about-to-start`, `about-to-submit`, `submitted`. FPL makes use of the `about-to-submit` hook to then perform the [main part of the migration](https://github.com/hmcts/fpl-ccd-configuration/blob/master/service/src/main/java/uk/gov/hmcts/reform/fpl/controllers/support/MigrateCaseController.java).
 
 ### More info
@@ -60,6 +60,17 @@ where
 can all be found in the fpl-case-service vault.
 
 Note that the parameters given are using AAT environment as an example.
+
+### Extra env vars
+```shell
+case-migration.timeout=${CASE_MIGRATION_TIMEOUT:7200} # global timeout for the migration tool (seconds) default = 2 hours
+
+case-migration.case_id_list.mapping=${CASE_ID_LIST_MAPPING:} # format DFPL-ID=>CASEID1|CASEID2|CASEID3;DFPL-ID2=>CASEID4
+case-migration.use_case_id_mapping=${USE_CASE_ID_MAPPING:true} # whether to use the mapping or the ES query - if false make sure to have an ES query in DataMigrationServiceImpl
+case-migration.retry_failures=${RETRY_FAILURES:false} # whether to retry failed cases
+
+default.thread.delay=${DEFAULT_THREAD_DELAY:0} # whether to artificially slow down the tool by sleeping a thread after a successful migration (seconds) default = no delay
+```
 
 ## Common issues
 

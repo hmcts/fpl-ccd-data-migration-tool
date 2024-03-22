@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.HOURS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
@@ -39,6 +39,8 @@ public class CaseMigrationProcessor {
     private final IdamRepository idamRepository;
     private final int defaultQuerySize;
     private final int defaultThreadLimit;
+    private final int defaultThreadDelay;
+    private final int timeout;
     private final String migrationId;
     private final String caseType;
     private final String jurisdiction;
@@ -66,20 +68,24 @@ public class CaseMigrationProcessor {
                                   IdamRepository idamRepository,
                                   @Value("${default.query.size}") int defaultQuerySize,
                                   @Value("${default.thread.limit:8}") int defaultThreadLimit,
+                                  @Value("${default.thread.delay:0") int defaultThreadDelay,
                                   @Value("${case-migration.processing.id}") String migrationId,
                                   @Value("${migration.jurisdiction}") String jurisdiction,
                                   @Value("${migration.caseType}") String caseType,
-                                  @Value("${case-migration.retry_failures}") boolean retryFailures) {
+                                  @Value("${case-migration.retry_failures}") boolean retryFailures,
+                                  @Value("${case-migration.timeout:7200") int timeout) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
         this.defaultQuerySize = defaultQuerySize;
         this.defaultThreadLimit = defaultThreadLimit;
+        this.defaultThreadDelay = defaultThreadDelay * 1000;
         this.migrationId = migrationId;
         this.jurisdiction = jurisdiction;
         this.caseType = caseType;
         this.retryFailures = retryFailures;
         this.threadPool = new ForkJoinPool(defaultThreadLimit);
+        this.timeout = timeout;
 
         setupProcessor(true);
     }
@@ -125,6 +131,11 @@ public class CaseMigrationProcessor {
                     );
                     log.info("Completed migrating case {}", caseId);
                     migratedCases.add(caseId);
+
+                    // artificially slow down the migration tool if needed
+                    if (defaultThreadDelay > 0) {
+                        Thread.sleep(defaultThreadDelay);
+                    }
                 } catch (CaseMigrationSkippedException e) {
                     log.info("Skipped migrating case {}, {}", caseId, e.getMessage());
                     skippedCases.add(caseId);
@@ -192,9 +203,9 @@ public class CaseMigrationProcessor {
         finishedLoading = true;
 
         // Finalise + wait for the queue to finish processing
-        boolean timedOut = !threadPool.awaitQuiescence(2, HOURS);
+        boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
         if (timedOut) {
-            log.error("Timed out after 2 Hours");
+            log.error("Timed out after {} seconds", timeout);
         }
 
         publishStats(startTime);
@@ -228,9 +239,9 @@ public class CaseMigrationProcessor {
         this.finishedLoading = true;
 
         // Wait for the threadpool to finish
-        boolean timedOut = !threadPool.awaitQuiescence(2, HOURS);
+        boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
         if (timedOut) {
-            log.error("Timed out after 2 Hours");
+            log.error("Timed out after {} seconds", timeout);
         }
 
         publishStats(startTime);
