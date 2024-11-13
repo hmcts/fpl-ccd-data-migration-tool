@@ -7,6 +7,6 @@ job:
   startingDeadlineSeconds: 180
   concurrencyPolicy: Forbid
   environment:
-    IDAM_REDIRECT_URL: https://fpl-case-service-*.service.core-compute-aat.internal/oauth2/callback
+    IDAM_REDIRECT_URL: https://adoption-cos-api-*.service.core-compute-aat.internal/oauth2/callback
 global:
   jobKind: CronJob

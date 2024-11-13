@@ -43,8 +43,8 @@ class CaseMigrationProcessorTest {
 
     private static final String USER_TOKEN = "Bearer eeeejjjttt";
 
-    private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
-    private static final String CASE_JURISDICTION = "PUBLICLAW";
+    private static final String CASE_TYPE = "A58";
+    private static final String CASE_JURISDICTION = "ADOPTION";
 
     private static final String MIGRATION_ID = "DFPL-TEST";
 

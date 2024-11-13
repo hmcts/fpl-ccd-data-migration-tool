@@ -8,7 +8,7 @@ properties([
 @Library("Infrastructure")
 
 def type = "java"
-def product = "fpl"
+def product = "adoption"
 def component = "cron-ccd-data-migration-tool"
 
 withNightlyPipeline(type, product, component) {

@@ -3,14 +3,14 @@
 @Library("Infrastructure")
 
 def type = "java"
-def product = "fpl"
+def product = "adoption"
 def component = "cron-ccd-data-migration-tool"
 
 def secrets = [
-  'fpl-${env}'      : [
+  'adoption-${env}'      : [
     secret('schedulerCaseWorkerUser','IDAM_USER'),
     secret('schedulerCaseWorkerPass','IDAM_PASS'),
-    secret('fpl-case-service-idam-client-secret','IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET'),
+    secret('adoption-idam-client-secret','IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET'),
     secret('s2sAuthTotpSecret','DATA_STORE_IDAM_KEY'),
     secret('idamRedirectUrl','IDAM_REDIRECT_URL')
   ]

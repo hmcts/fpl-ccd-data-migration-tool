@@ -1,7 +1,7 @@
 version: '2.1'
 
 services:
-  fpl-cron-ccd-data-migration-tool:
+  adoption-cron-ccd-data-migration-tool:
     build:
       context: .
       args:

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.utils;
+package uk.gov.hmcts.reform.adoption.utils;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.domain.util.ResourceReader;

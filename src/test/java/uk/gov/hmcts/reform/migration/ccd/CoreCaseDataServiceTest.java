@@ -28,7 +28,7 @@ import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATI
 class CoreCaseDataServiceTest {
 
     private static final String EVENT_ID = "migrateCase";
-    private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
+    private static final String CASE_TYPE = "A58";
     private static final long CASE_ID = 12345678L;
     private static final String USER_ID = "30";
     private static final String AUTH_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJubGJoN";
