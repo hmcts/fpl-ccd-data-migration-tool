@@ -83,7 +83,7 @@ class CoreCaseDataServiceTest {
         assertThat(update.getData().get(MIGRATION_ID_KEY)).isEqualTo(DFPL_1124);
 
         verify(dataMigrationService).accepts();
-        verify(dataMigrationService).migrate(caseDetails3.getData(), DFPL_1124);
+        verify(dataMigrationService).migrate(caseDetails3, DFPL_1124);
         verify(coreCaseDataApi).startEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, "30",
             null, CASE_TYPE, String.valueOf(CASE_ID), EVENT_ID);
         verify(coreCaseDataApi).submitEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, USER_ID, null,
@@ -126,7 +126,7 @@ class CoreCaseDataServiceTest {
         //then
         assertThat(update).isNull();
         verify(dataMigrationService).accepts();
-        verify(dataMigrationService, never()).migrate(caseDetails3.getData(), DFPL_1124);
+        verify(dataMigrationService, never()).migrate(caseDetails3, DFPL_1124);
         verify(coreCaseDataApi).startEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, "30",
             null, CASE_TYPE, String.valueOf(CASE_ID), EVENT_ID);
         verify(coreCaseDataApi, never()).submitEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, USER_ID, null,
@@ -162,7 +162,7 @@ class CoreCaseDataServiceTest {
             .caseDetails(caseDetails)
             .build();
 
-        when(dataMigrationService.migrate(data, DFPL_1124))
+        when(dataMigrationService.migrate(caseDetails, DFPL_1124))
             .thenReturn(data);
 
         when(coreCaseDataApi.startEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, "30",
