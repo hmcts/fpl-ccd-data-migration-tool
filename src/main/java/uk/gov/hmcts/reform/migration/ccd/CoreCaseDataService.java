@@ -54,7 +54,7 @@ public class CoreCaseDataService {
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
 
             Map<String, Object> migratedFields = dataMigrationService.migrate(
-                updatedCaseDetails.getData(),
+                updatedCaseDetails,
                 migrationId);
             migratedFields.put(MIGRATION_ID_KEY, migrationId);
 
