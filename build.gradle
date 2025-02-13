@@ -217,7 +217,7 @@ dependencies {
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation 'com.github.hmcts:fortify-client:1.2.2:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.7:all'
 
   implementation group: 'commons-io', name: 'commons-io', version: '2.14.0'
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-resource-server', version: springSecurity
