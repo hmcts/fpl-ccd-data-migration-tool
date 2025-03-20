@@ -243,7 +243,7 @@ dependencyManagement {
       entry 'json-path'
       entry 'xml-path'
     }
-    dependencySet(group: 'org.codehaus.groovy', version: '3.0.24') {
+    dependencySet(group: 'org.codehaus.groovy', version: '3.0.19') {
       entry 'groovy'
       entry 'groovy-xml'
       entry 'groovy-json'
