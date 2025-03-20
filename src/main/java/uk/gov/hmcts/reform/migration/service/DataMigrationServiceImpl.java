@@ -41,11 +41,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2572", this::triggerTtlMigration,
         "DFPL-2635", this::triggerOnlyMigration,
         "DFPL-2642", this::triggerOnlyMigration,
+        "DFPL-2423", this::triggerOnlyMigration,
         "DFPL-2640", this::triggerOnlyMigration
         );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-2585", this.closedCases(),
+        "DFPL-2423", this.topLevelFieldExistsQuery("proceeding"),
         "DFPL-2572", this.openCases()
     );
 
