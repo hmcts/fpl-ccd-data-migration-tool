@@ -219,7 +219,7 @@ dependencies {
 
   testImplementation 'com.github.hmcts:fortify-client:1.4.7:all'
 
-  implementation group: 'commons-io', name: 'commons-io', version: '2.18.0'
+  implementation group: 'commons-io', name: 'commons-io', version: '2.14.0'
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-resource-server', version: springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-jose', version: springSecurity
