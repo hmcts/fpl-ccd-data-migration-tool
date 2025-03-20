@@ -39,14 +39,12 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-2572", this::triggerTtlMigration,
-        "DFPL-2635", this::triggerOnlyMigration,
-        "DFPL-2642", this::triggerOnlyMigration,
-        "DFPL-2640", this::triggerOnlyMigration
+        "DFPL-2487", this::triggerOnlyMigration
         );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-2585", this.closedCases(),
-        "DFPL-2572", this.openCases()
+        "DFPL-2487", this.activeCases()
     );
 
     private EsQuery closedCases() {
@@ -65,6 +63,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return BooleanQuery.builder()
             .must(Must.builder()
                 .clauses(List.of(openState))
+                .build())
+            .build();
+    }
+
+    private EsQuery activeCases() {
+        final MatchQuery openCases = MatchQuery.of("state", "Open");
+        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+        final MatchQuery returnedCases = MatchQuery.of("state", "RETURNED");
+        final MatchQuery closedCases = MatchQuery.of("state", "CLOSED");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(openCases, deletedCases, returnedCases, closedCases))
                 .build())
             .build();
     }
