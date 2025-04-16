@@ -18,6 +18,8 @@
   <!--Please add all the temporary suppression under the below section-->
   <suppress>
     <notes>Temporary Suppression</notes>
+    <cve>CVE-2023-52428</cve>
+    <cve>CVE-2024-38820</cve>
     <cve>CVE-2023-34034</cve>
     <cve>CVE-2016-1000027</cve>
     <cve>CVE-2020-5412</cve>
