@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
 import uk.gov.hmcts.reform.fpl.model.common.Element;
 import uk.gov.hmcts.reform.migration.query.BooleanQuery;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
@@ -38,7 +39,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-2421", this::triggerOnlyMigration,
+        "DFPL-2421", data -> triggerIfTopLevelFieldExist(data, "others"),
+        "DFPL-2421-rollback", data -> triggerIfTopLevelFieldExist(data, "othersV2"),
         "DFPL-2572", this::triggerTtlMigration,
         "DFPL-2740", this::triggerOnlyMigration,
         "DFPL-2744", this::triggerOnlyMigration,
@@ -47,7 +49,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-2585", this.closedCases(),
-        "DFPL-2421", this.topLevelFieldExistsQuery("data.others"),
+        "DFPL-2421", this.topLevelFieldExistsQuery("caseName"),
+        "DFPL-2421-rollback", this.topLevelFieldExistsQuery("caseName"),
         "DFPL-2487", this.activeCases()
     );
 
@@ -236,6 +239,14 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         }
 
         return updates;
+    }
+
+    private Map<String, Object> triggerIfTopLevelFieldExist(CaseDetails data, String fieldName) {
+        if (data.getData().containsKey(fieldName)) {
+            // do nothing
+            return new HashMap<>();
+        }
+        throw new CaseMigrationSkippedException("Skipping case. " + fieldName + " is empty");
     }
 
     public LocalDate convertValueToLocalDate(Object dateOnCase) {
