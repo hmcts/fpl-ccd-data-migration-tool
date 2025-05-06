@@ -42,6 +42,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2421", data -> triggerIfTopLevelFieldExist(data, "others"),
         "DFPL-2421-rollback", data -> triggerIfTopLevelFieldExist(data, "othersV2"),
         "DFPL-2423",  data -> triggerIfTopLevelFieldExist(data, "proceeding"),
+        "DFPL-2423-rollback",  data -> triggerIfTopLevelFieldExist(data, "proceedings"),
         "DFPL-2572", this::triggerTtlMigration,
         "DFPL-2740", this::triggerOnlyMigration,
         "DFPL-2744", this::triggerOnlyMigration,
@@ -54,6 +55,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2421", this.topLevelFieldExistsQuery("caseName"),
         "DFPL-2421-rollback", this.topLevelFieldExistsQuery("caseName"),
         "DFPL-2423", this.topLevelFieldExistsQuery("caseName"),
+        "DFPL-2423-rollback", this.topLevelFieldExistsQuery("caseName"),
         "DFPL-2487", this.activeCases()
     );
 
