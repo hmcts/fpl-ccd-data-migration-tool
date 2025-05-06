@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
 import uk.gov.hmcts.reform.fpl.model.common.Element;
 import uk.gov.hmcts.reform.migration.query.BooleanQuery;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
@@ -38,17 +39,22 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
+        "DFPL-2421", data -> triggerIfTopLevelFieldExist(data, "others"),
+        "DFPL-2421-rollback", data -> triggerIfTopLevelFieldExist(data, "othersV2"),
+        "DFPL-2423",  data -> triggerIfTopLevelFieldExist(data, "proceeding"),
         "DFPL-2572", this::triggerTtlMigration,
-        "DFPL-2635", this::triggerOnlyMigration,
-        "DFPL-2642", this::triggerOnlyMigration,
-        "DFPL-2423", this::triggerOnlyMigration,
-        "DFPL-2640", this::triggerOnlyMigration
+        "DFPL-2740", this::triggerOnlyMigration,
+        "DFPL-2744", this::triggerOnlyMigration,
+        "DFPL-2739", this::triggerOnlyMigration,
+        "DFPL-2733", this::triggerOnlyMigration
         );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-2585", this.closedCases(),
-        "DFPL-2423", this.topLevelFieldExistsQuery("proceeding"),
-        "DFPL-2572", this.openCases()
+        "DFPL-2421", this.topLevelFieldExistsQuery("caseName"),
+        "DFPL-2421-rollback", this.topLevelFieldExistsQuery("caseName"),
+        "DFPL-2423", this.topLevelFieldExistsQuery("caseName"),
+        "DFPL-2487", this.activeCases()
     );
 
     private EsQuery closedCases() {
@@ -67,6 +73,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return BooleanQuery.builder()
             .must(Must.builder()
                 .clauses(List.of(openState))
+                .build())
+            .build();
+    }
+
+    private EsQuery activeCases() {
+        final MatchQuery openCases = MatchQuery.of("state", "Open");
+        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+        final MatchQuery returnedCases = MatchQuery.of("state", "RETURNED");
+        final MatchQuery closedCases = MatchQuery.of("state", "CLOSED");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(openCases, deletedCases, returnedCases, closedCases))
                 .build())
             .build();
     }
@@ -223,6 +242,14 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         }
 
         return updates;
+    }
+
+    private Map<String, Object> triggerIfTopLevelFieldExist(CaseDetails data, String fieldName) {
+        if (data.getData().containsKey(fieldName)) {
+            // do nothing
+            return new HashMap<>();
+        }
+        throw new CaseMigrationSkippedException("Skipping case. " + fieldName + " is empty");
     }
 
     public LocalDate convertValueToLocalDate(Object dateOnCase) {
