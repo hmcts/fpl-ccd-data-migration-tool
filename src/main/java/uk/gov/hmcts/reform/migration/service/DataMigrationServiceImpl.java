@@ -42,13 +42,25 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2740", this::triggerOnlyMigration,
         "DFPL-2744", this::triggerOnlyMigration,
         "DFPL-2739", this::triggerOnlyMigration,
-        "DFPL-2733", this::triggerOnlyMigration
+        "DFPL-2733", this::triggerOnlyMigration,
+        "DFPL-2360", this::triggerOnlyMigration
         );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-2585", this.closedCases(),
-        "DFPL-2487", this.activeCases()
+        "DFPL-2487", this.activeCases(),
+        "DFPL-2360", this.allNonDeletedCases()
     );
+
+    private EsQuery allNonDeletedCases() {
+        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(deletedCases))
+                .build())
+            .build();
+    }
 
     private EsQuery closedCases() {
         final MatchQuery closedState = MatchQuery.of("state", "CLOSED");
