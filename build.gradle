@@ -232,10 +232,6 @@ dependencyManagement {
       entry 'commons-beanutils'
     }
 
-    dependencySet(group: 'io.rest-assured', version: '5.5.1') {
-      entry 'json-path'
-      entry 'xml-path'
-    }
     dependencySet(group: 'org.apache.groovy', version: '4.0.22') {
       entry 'groovy'
       entry 'groovy-xml'
