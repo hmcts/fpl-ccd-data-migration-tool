@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.migration.configuration.CaseIdListConfiguration;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
@@ -13,8 +15,16 @@ import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 import java.util.List;
 
 @Slf4j
-@SpringBootApplication
-//@PropertySource("classpath:application.properties")
+@SpringBootApplication(scanBasePackages = {
+    "uk.gov.hmcts.reform.migration",
+    "uk.gov.hmcts.reform.domain",
+    "uk.gov.hmcts.reform.fpl"
+}, scanBasePackageClasses = {IdamClient.class})
+@EnableFeignClients(basePackages = {
+    "uk.gov.hmcts.reform.idam.client",
+    "uk.gov.hmcts.reform.ccd.client",
+    "uk.gov.hmcts.reform.authorisation",
+})
 public class CaseMigrationRunner implements CommandLineRunner {
 
     @Autowired
