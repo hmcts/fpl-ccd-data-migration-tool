@@ -38,25 +38,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
-        "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-2421", data -> triggerIfTopLevelFieldExist(data, "others"),
-        "DFPL-2421-rollback", data -> triggerIfTopLevelFieldExist(data, "othersV2"),
-        "DFPL-2423",  data -> triggerIfTopLevelFieldExist(data, "proceeding"),
-        "DFPL-2423-rollback",  data -> triggerIfTopLevelFieldExist(data, "proceedings"),
-        "DFPL-2572", this::triggerTtlMigration,
-        "DFPL-2739", this::triggerOnlyMigration,
-        "DFPL-2733", this::triggerOnlyMigration,
-        "DFPL-2360", this::triggerOnlyMigration
+        "DFPL-log", this::triggerOnlyMigration
         );
 
     private final Map<String, EsQuery> queries = Map.of(
-        "DFPL-2585", this.closedCases(),
-        "DFPL-2421", this.topLevelFieldExistsQuery("caseName"),
-        "DFPL-2421-rollback", this.topLevelFieldExistsQuery("caseName"),
-        "DFPL-2423", this.topLevelFieldExistsQuery("caseName"),
-        "DFPL-2423-rollback", this.topLevelFieldExistsQuery("caseName"),
-        "DFPL-2487", this.activeCases(),
-        "DFPL-2360", this.allNonDeletedCases()
+        "DFPL-test", this.openCases()
     );
 
     private EsQuery allNonDeletedCases() {
