@@ -232,7 +232,7 @@ dependencyManagement {
       entry 'commons-beanutils'
     }
 
-    dependencySet(group: 'org.apache.groovy', version: '4.0.22') {
+    dependencySet(group: 'org.apache.groovy', version: '4.0.27') {
       entry 'groovy'
       entry 'groovy-xml'
       entry 'groovy-json'
