@@ -211,7 +211,7 @@ dependencies {
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitVersion
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junitVersion
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: junitVersion
-  testImplementation group:'org.mockito', name: 'mockito-junit-jupiter', version: '5.16.1'
+  testImplementation group:'org.mockito', name: 'mockito-junit-jupiter', version: '5.18.0'
 
   compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
