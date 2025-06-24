@@ -165,7 +165,7 @@ repositories {
 }
 
 ext {
-  log4JVersion = "2.24.3"
+  log4JVersion = "2.25.0"
   lombokVersion = "1.18.38"
   junitVersion = "5.11.4"
   powermockVersion = '2.0.9'
