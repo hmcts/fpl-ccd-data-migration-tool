@@ -42,8 +42,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         );
 
     private final Map<String, EsQuery> queries = Map.of(
-        "DFPL-test", this.openCases(),
-        "DFPL-log", this.allNonDeletedCases()
+        "DFPL-test", this.openCases()
     );
 
     private EsQuery allNonDeletedCases() {
