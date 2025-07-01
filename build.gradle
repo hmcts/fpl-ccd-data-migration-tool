@@ -199,7 +199,7 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: '8.1'
 
-  implementation group: 'com.github.hmcts', name: 'java-logging', version: '6.1.9'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts.java-logging', name: 'logging-appinsights', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '3.0.0'
@@ -219,7 +219,7 @@ dependencies {
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   testAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation 'com.github.hmcts:fortify-client:1.4.8:all'
+  testImplementation 'com.github.hmcts:fortify-client:1.4.9:all'
 }
 
 dependencyManagement {
