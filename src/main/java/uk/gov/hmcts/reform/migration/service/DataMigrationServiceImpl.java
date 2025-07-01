@@ -139,6 +139,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    private EsQuery topLevelFieldExistsQuery(String field, String values) {
+        return MatchQuery.of("data." + field, values);
+    }
+
     private EsQuery topLevelFieldDoesNotExistQuery(String field) {
         return BooleanQuery.builder()
             .filter(Filter.builder()
@@ -147,10 +151,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                     .build()))
                 .build())
             .build();
-    }
-
-    private EsQuery topLevelFieldExistsQuery(String field, String values) {
-        return MatchQuery.of("data." + field, values);
     }
 
     private Map<String, Object> triggerOnlyMigration(CaseDetails caseDetails) {
