@@ -31,7 +31,6 @@ import java.util.function.Predicate;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 @Slf4j
 @Component
@@ -132,10 +131,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 .clauses(List.of(ExistsQuery.of("data." + field)))
                 .build())
             .build();
-    }
-
-    private EsQuery topLevelFieldExistsQuery(String field, String values) {
-        return MatchQuery.of("data." + field, values);
     }
 
     private EsQuery topLevelFieldDoesNotExistQuery(String field) {

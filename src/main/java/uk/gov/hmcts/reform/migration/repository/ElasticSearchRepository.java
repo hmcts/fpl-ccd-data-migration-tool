@@ -25,8 +25,7 @@ public class ElasticSearchRepository {
 
     public static final Sort SORT_BY_REF = Sort.builder()
         .clauses(List.of(
-            SortQuery.of("data.familyManCaseNumber.keyword", SortOrder.ASC), // Temp for migration tool perf testing
-            SortQuery.of("reference.keyword", SortOrder.DESC)
+            SortQuery.of("data.familyManCaseNumber.keyword", SortOrder.ASC) // Temp for migration tool perf testing
         ))
         .build();
 
@@ -54,9 +53,8 @@ public class ElasticSearchRepository {
         int retries = 0;
         while (!completed && retries < 20) {
             try {
-                String queryStr = !isEmpty(after)
-                    ? query.toQueryContext(size, after, SORT_BY_REF).toString()
-                    : query.toQueryContext(size, SORT_BY_REF).toString();
+                // Temp for migration tool perf testing
+                String queryStr = query.toQueryContext(size, Integer.parseInt(after), SORT_BY_REF).toString();
 
                 result = search(userToken, caseType, queryStr);
                 completed = true;
