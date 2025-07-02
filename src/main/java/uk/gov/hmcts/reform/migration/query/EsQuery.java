@@ -33,7 +33,7 @@ public interface EsQuery extends EsClause {
             "size", size,
             "query", this.toMap(),
             "sort", sort.toMap(),
-            "_source", List.of("reference", "jurisdiction"),
+            "_source", List.of("reference", "jurisdiction", "data.familyManCaseNumber"),
             "track_total_hits", true)
         );
     }
@@ -45,7 +45,7 @@ public interface EsQuery extends EsClause {
             "search_after", Arrays.stream(after.split("\\|")).toList(),
             "query", this.toMap(),
             "sort", sort.toMap(),
-            "_source", List.of("reference", "jurisdiction"),
+            "_source", List.of("reference", "jurisdiction", "data.familyManCaseNumber"),
             "track_total_hits", true)
         );
     }
