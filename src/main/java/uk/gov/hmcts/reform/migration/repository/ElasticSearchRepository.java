@@ -44,7 +44,7 @@ public class ElasticSearchRepository {
     }
 
     @SneakyThrows
-    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, String after) {
+    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, Integer after) {
         requireNonNull(query);
         SearchResult result = null;
 
@@ -55,7 +55,7 @@ public class ElasticSearchRepository {
             try {
                 // Temp for migration tool perf testing
                 String queryStr = !isEmpty(after)
-                    ? query.toQueryContext(size, Integer.parseInt(after), SORT_BY_REF).toString()
+                    ? query.toQueryContext(size, after, SORT_BY_REF).toString()
                     : query.toQueryContext(size, SORT_BY_REF).toString();
 
                 result = search(userToken, caseType, queryStr);

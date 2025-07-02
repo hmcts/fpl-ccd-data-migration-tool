@@ -177,8 +177,7 @@ public class CaseMigrationProcessor {
         // Setup ESQuery provider to fill up the queue
         int pages = paginate(total);
         log.debug("Found {} pages", pages);
-        int searchAfterCount = 0;
-        String searchAfter = "0";
+        Integer searchAfter = 1;
         boolean complete = false;
         int page = 0;
         while (!complete) {
@@ -190,8 +189,7 @@ public class CaseMigrationProcessor {
                     complete = true;
                     continue;
                 }
-                searchAfterCount += cases.size();
-                searchAfter = String.valueOf(searchAfterCount);
+                searchAfter += cases.size();
 
                 // add to queue
                 cases.stream()
