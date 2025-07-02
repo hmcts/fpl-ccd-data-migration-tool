@@ -36,8 +36,6 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
-    @Value("${case-migration.case_group}")
-    String caseGroupString;
 
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(

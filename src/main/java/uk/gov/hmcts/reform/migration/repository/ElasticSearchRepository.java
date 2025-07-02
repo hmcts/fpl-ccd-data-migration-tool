@@ -54,7 +54,9 @@ public class ElasticSearchRepository {
         while (!completed && retries < 20) {
             try {
                 // Temp for migration tool perf testing
-                String queryStr = query.toQueryContext(size, Integer.parseInt(after), SORT_BY_REF).toString();
+                String queryStr = !isEmpty(after)
+                    ? query.toQueryContext(size, Integer.parseInt(after), SORT_BY_REF).toString()
+                    : query.toQueryContext(size, SORT_BY_REF).toString();
 
                 result = search(userToken, caseType, queryStr);
                 completed = true;
