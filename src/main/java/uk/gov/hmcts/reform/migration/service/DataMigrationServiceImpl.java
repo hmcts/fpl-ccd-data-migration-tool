@@ -102,11 +102,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     @Override
     public EsQuery getQuery(String migrationId) {
-        // Temp for migration tool perf testing
-        if ("DFPL-log".equals(migrationId) && isNotEmpty(caseGroupString)) {
-            return this.topLevelFieldExistsQuery("familyManCaseNumber", caseGroupString);
-        }
-
         if (!queries.containsKey(migrationId)) {
             throw new NoSuchElementException("No migration mapped to " + migrationId);
         }
