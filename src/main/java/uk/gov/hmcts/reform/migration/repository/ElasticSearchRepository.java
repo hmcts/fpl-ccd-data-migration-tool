@@ -25,7 +25,8 @@ public class ElasticSearchRepository {
 
     public static final Sort SORT_BY_REF = Sort.builder()
         .clauses(List.of(
-            SortQuery.of("data.familyManCaseNumber", SortOrder.ASC) // Temp for migration tool perf testing
+            SortQuery.of("data.familyManCaseNumber.keyword", SortOrder.ASC), // Temp for migration tool perf testing
+            SortQuery.of("reference.keyword", SortOrder.DESC)
         ))
         .build();
 

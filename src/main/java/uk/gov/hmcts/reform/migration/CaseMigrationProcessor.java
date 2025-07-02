@@ -190,7 +190,9 @@ public class CaseMigrationProcessor {
                     continue;
                 }
 
-                searchAfter = cases.get(cases.size() - 1).getId().toString();
+                // Temp for migration tool perf testing
+                searchAfter = cases.get(cases.size() - 1).getData().get("familyManCaseNumber") + "|"
+                    + cases.get(cases.size() - 1).getId().toString();
 
                 // add to queue
                 cases.stream()
