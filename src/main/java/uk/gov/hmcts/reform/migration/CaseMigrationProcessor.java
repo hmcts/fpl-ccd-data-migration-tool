@@ -189,6 +189,7 @@ public class CaseMigrationProcessor {
                     complete = true;
                     continue;
                 }
+
                 searchAfter += cases.size();
 
                 // add to queue
