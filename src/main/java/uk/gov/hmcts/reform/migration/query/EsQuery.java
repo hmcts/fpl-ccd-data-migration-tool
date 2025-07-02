@@ -38,10 +38,9 @@ public interface EsQuery extends EsClause {
     }
 
     default JSONObject toQueryContext(int size, String after, Sort sort) {
-        // Temp for migration tool perf testing
         return new JSONObject(Map.of(
             "size", size,
-            "search_after", after,
+            "search_after", List.of(after),
             "query", this.toMap(),
             "sort", sort.toMap(),
             "_source", List.of("reference", "jurisdiction"),
