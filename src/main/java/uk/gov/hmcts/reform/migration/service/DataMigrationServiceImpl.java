@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
@@ -31,14 +30,11 @@ import java.util.function.Predicate;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
-import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
-    @Value("${case-migration.case_group}")
-    String caseGroupString;
 
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
@@ -47,7 +43,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-test", this.openCases(),
-        "DFPL-log", this.allNonDeletedCases()
+        "DFPL-log", this.topLevelFieldExistsQuery("familyManCaseNumber")
     );
 
     private EsQuery allNonDeletedCases() {
@@ -102,11 +98,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     @Override
     public EsQuery getQuery(String migrationId) {
-        // Temp for migration tool perf testing
-        if ("DFPL-log".equals(migrationId) && isNotEmpty(caseGroupString)) {
-            return this.topLevelFieldExistsQuery("familyManCaseNumber", caseGroupString);
-        }
-
         if (!queries.containsKey(migrationId)) {
             throw new NoSuchElementException("No migration mapped to " + migrationId);
         }
@@ -137,10 +128,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 .clauses(List.of(ExistsQuery.of("data." + field)))
                 .build())
             .build();
-    }
-
-    private EsQuery topLevelFieldExistsQuery(String field, String values) {
-        return MatchQuery.of("data." + field, values);
     }
 
     private EsQuery topLevelFieldDoesNotExistQuery(String field) {

@@ -25,7 +25,7 @@ public class ElasticSearchRepository {
 
     public static final Sort SORT_BY_REF = Sort.builder()
         .clauses(List.of(
-            SortQuery.of("reference.keyword", SortOrder.DESC)
+            SortQuery.of("data.familyManCaseNumber.keyword", SortOrder.ASC) // Temp for migration tool perf testing
         ))
         .build();
 
@@ -44,7 +44,7 @@ public class ElasticSearchRepository {
     }
 
     @SneakyThrows
-    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, String after) {
+    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, Integer after) {
         requireNonNull(query);
         SearchResult result = null;
 
