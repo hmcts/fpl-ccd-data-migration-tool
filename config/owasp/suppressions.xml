@@ -34,6 +34,7 @@
     <cve>CVE-2023-20883</cve>
     <cve>CVE-2023-34034</cve>
     <cve>CVE-2023-34055</cve>
+    <cve>CVE-2025-48976</cve>
   </suppress>
   <suppress>
     <notes><![CDATA[
