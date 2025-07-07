@@ -25,6 +25,7 @@ public class ElasticSearchRepository {
 
     public static final Sort SORT_BY_REF = Sort.builder()
         .clauses(List.of(
+            SortQuery.of("data.familyManCaseNumber.keyword", SortOrder.ASC),
             SortQuery.of("reference.keyword", SortOrder.DESC)
         ))
         .build();
@@ -57,6 +58,7 @@ public class ElasticSearchRepository {
                     ? query.toQueryContext(size, after, SORT_BY_REF).toString()
                     : query.toQueryContext(size, SORT_BY_REF).toString();
 
+                log.info("Querying cases with query {}", queryStr);
                 result = search(userToken, caseType, queryStr);
                 completed = true;
             } catch (Exception e) {
