@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.migration.query;
 
 import net.minidev.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public interface EsQuery extends EsClause {
             "size", size,
             "query", this.toMap(),
             "sort", sort.toMap(),
-            "_source", List.of("reference", "jurisdiction"),
+            "_source", List.of("reference", "jurisdiction", "data.familyManCaseNumber"),
             "track_total_hits", true)
         );
     }
@@ -40,12 +41,11 @@ public interface EsQuery extends EsClause {
     default JSONObject toQueryContext(int size, String after, Sort sort) {
         return new JSONObject(Map.of(
             "size", size,
-            "search_after", List.of(after),
+            "search_after", Arrays.stream(after.split(",")).toList(),
             "query", this.toMap(),
             "sort", sort.toMap(),
-            "_source", List.of("reference", "jurisdiction"),
+            "_source", List.of("reference", "jurisdiction", "data.familyManCaseNumber"),
             "track_total_hits", true)
         );
     }
-
 }

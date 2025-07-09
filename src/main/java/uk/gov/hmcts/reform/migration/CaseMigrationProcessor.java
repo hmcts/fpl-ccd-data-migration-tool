@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
@@ -190,7 +191,8 @@ public class CaseMigrationProcessor {
                     continue;
                 }
 
-                searchAfter = cases.get(cases.size() - 1).getId().toString();
+                searchAfter = Optional.ofNullable(cases.get(cases.size() - 1).getData().get("familyManCaseNumber"))
+                    .orElse("").toString().toLowerCase() + "," + cases.get(cases.size() - 1).getId().toString();
 
                 // add to queue
                 cases.stream()
