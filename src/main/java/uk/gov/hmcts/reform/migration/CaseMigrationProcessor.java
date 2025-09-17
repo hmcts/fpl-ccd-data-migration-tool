@@ -24,6 +24,7 @@ import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
@@ -204,6 +205,103 @@ public class CaseMigrationProcessor {
         }
 
         finishedLoading = true;
+
+        // Finalise + wait for the queue to finish processing
+        boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
+        if (timedOut) {
+            log.error("Timed out after {} seconds", timeout);
+        }
+
+        publishStats(startTime);
+
+        if (retryFailures && this.getFailedCases().size() > 0) {
+            List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+            // reset migration tool, with no more retries allowed
+            this.setupProcessor(false);
+
+            // migrate the failed cases
+            this.migrateList(toRetry);
+        }
+    }
+
+    @SneakyThrows
+    public void migrateQueryByBatch(EsQuery query, String searchAfter, int batchSize) {
+        requireNonNull(query);
+        requireNonNull(caseType);
+        requireNonNull(migrationId);
+
+        if (isBlank(searchAfter)) {
+            throw new IllegalArgumentException("searchAfter must be provided for batch mode");
+        }
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("batchSize must be greater than 0");
+        }
+
+        String userToken =  idamRepository.generateUserToken();
+
+        // Get total cases to migrate
+        int total;
+        try {
+            total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query, searchAfter);
+            log.info("Batch mode on! Found {} cases left to migrate ", total);
+            if (total > batchSize) {
+                total = batchSize;
+                log.info("{} cases will be processed in this batch", batchSize);
+            }
+        } catch (Exception e) {
+            log.error("Could not determine the number of cases to search for due to {}",
+                e.getMessage(), e
+            );
+            log.info("Migration finished unsuccessfully.");
+            return;
+        }
+
+        // Setup ESQuery provider to fill up the queue
+        int pages = paginate(total);
+        log.debug("Found {} pages", pages);
+        boolean complete = false;
+        int page = 0;
+        int numberOfCasesQueried = 0;
+        while (!complete) {
+            try {
+                int querySize = Math.min(defaultQuerySize, total - (page * defaultQuerySize));
+
+                if (querySize <= 0) {
+                    complete = true;
+                    continue;
+                }
+
+                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, querySize,
+                    searchAfter);
+
+                if (cases.isEmpty()) {
+                    complete = true;
+                    continue;
+                }
+
+                numberOfCasesQueried += cases.size();
+                searchAfter = cases.get(cases.size() - 1).getId().toString();
+
+                // add to queue
+                cases.stream()
+                    .map(CaseDetails::getId)
+                    .forEach(casesToMigrate::add);
+
+                page++;
+            } catch (Exception e) {
+                log.error("Could not search for page {}", page, e);
+            }
+        }
+
+        finishedLoading = true;
+        // safe check all cases of this batch are queried
+        if (numberOfCasesQueried != total) {
+            log.error("Number of cases queried {} is not equal to total {} for this batch. Please investigate!",
+                numberOfCasesQueried, total);
+        }
 
         // Finalise + wait for the queue to finish processing
         boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);

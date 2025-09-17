@@ -41,6 +41,12 @@ public class CaseMigrationRunner implements CommandLineRunner {
 
     @Value("${case-migration.use_case_id_mapping:false}") boolean useIdList;
 
+    @Value("${case-migration.batch_mode:false}") boolean batchMode;
+
+    @Value("${case-migration.batch_search_after:}") String searchAfter;
+
+    @Value("${case-migration.batch_size:5000}") int batchSize;
+
     public static void main(String[] args) {
         SpringApplication.run(CaseMigrationRunner.class, args);
     }
@@ -58,6 +64,10 @@ public class CaseMigrationRunner implements CommandLineRunner {
                 // Do ID List Migration
                 List<String> caseIds = caseIdListConfiguration.getCaseIds(migrationId);
                 caseMigrationProcessor.migrateList(caseIds);
+            } else if (batchMode) {
+                // Do ESQuery based migration in batch mode
+                EsQuery query = dataMigrationService.getQuery(migrationId);
+                caseMigrationProcessor.migrateQueryByBatch(query, searchAfter, batchSize);
             } else {
                 // Do ESQuery based migration
                 EsQuery query = dataMigrationService.getQuery(migrationId);

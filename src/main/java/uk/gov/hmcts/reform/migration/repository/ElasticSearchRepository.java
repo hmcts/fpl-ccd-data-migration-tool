@@ -39,6 +39,11 @@ public class ElasticSearchRepository {
         return search(userToken, caseType, query.toQueryContext(1, 0).toString()).getTotal();
     }
 
+    public int searchResultsSize(String userToken, String caseType, EsQuery query, String after) {
+        requireNonNull(query);
+        return search(userToken, caseType, query.toQueryContext(1, after, SORT_BY_REF).toString()).getTotal();
+    }
+
     public SearchResult search(String userToken, String caseType, String query) {
         return ccdService.searchCases(userToken, caseType, query);
     }
