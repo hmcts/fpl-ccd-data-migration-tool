@@ -229,15 +229,19 @@ public class CaseMigrationProcessor {
 
     @SneakyThrows
     public void migrateQueryByBatch(EsQuery query, String searchAfter, int batchSize) {
+        log.info("Batch mode on!");
         requireNonNull(query);
         requireNonNull(caseType);
         requireNonNull(migrationId);
 
-        if (isBlank(searchAfter)) {
-            throw new IllegalArgumentException("searchAfter must be provided for batch mode");
-        }
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSize must be greater than 0");
+        }
+
+        if (isBlank(searchAfter)) {
+            log.warn("searchAfter is blank, will migrate the first batch");
+        } else {
+            log.info("searchAfter: {}", searchAfter);
         }
 
         String userToken =  idamRepository.generateUserToken();
@@ -246,7 +250,7 @@ public class CaseMigrationProcessor {
         int total;
         try {
             total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query, searchAfter);
-            log.info("Batch mode on! Found {} cases left to migrate ", total);
+            log.info("Found {} cases left to migrate.", total);
             if (total > batchSize) {
                 total = batchSize;
                 log.info("{} cases will be processed in this batch", batchSize);
