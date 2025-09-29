@@ -238,46 +238,39 @@ public class CaseMigrationProcessor {
             throw new IllegalArgumentException("batchSize must be greater than 0");
         }
 
+        String userToken =  idamRepository.generateUserToken();
         if (isBlank(searchAfter)) {
             log.warn("searchAfter is blank, will migrate the first batch");
-        } else {
-            log.info("searchAfter: {}", searchAfter);
-        }
-
-        String userToken =  idamRepository.generateUserToken();
-
-        // Get total cases to migrate
-        int total;
-        try {
-            total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query, searchAfter);
-            log.info("Found {} cases left to migrate.", total);
-            if (total > batchSize) {
-                total = batchSize;
-                log.info("{} cases will be processed in this batch", batchSize);
+            // Get total cases to migrate if this is the first batch
+            try {
+                int total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query);
+                log.info("Found {} cases to migrate in total, but batch size is {} ", total, batchSize);
+            } catch (Exception e) {
+                log.error("Could not determine the number of cases to search for due to {}",
+                    e.getMessage(), e
+                );
+                log.info("Migration finished unsuccessfully.");
+                return;
             }
-        } catch (Exception e) {
-            log.error("Could not determine the number of cases to search for due to {}",
-                e.getMessage(), e
-            );
-            log.info("Migration finished unsuccessfully.");
-            return;
+        } else {
+            log.info("Batch continue with search_after: {}", searchAfter);
         }
 
         // Setup ESQuery provider to fill up the queue
-        int pages = paginate(total);
+        int pages = paginate(batchSize);
         log.debug("Found {} pages", pages);
         boolean complete = false;
         int page = 0;
         int numberOfCasesQueried = 0;
         while (!complete) {
             try {
-                int querySize = Math.min(defaultQuerySize, total - (page * defaultQuerySize));
+                int querySize = Math.min(defaultQuerySize, batchSize - (page * defaultQuerySize));
 
                 if (querySize <= 0) {
                     complete = true;
                     continue;
                 }
-
+                log.info("Querying page {}, size {}, searchAfter {}", page, querySize, searchAfter);
                 List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, querySize,
                     searchAfter);
 
@@ -300,11 +293,13 @@ public class CaseMigrationProcessor {
             }
         }
 
+
         finishedLoading = true;
-        // safe check all cases of this batch are queried
-        if (numberOfCasesQueried != total) {
-            log.error("Number of cases queried {} is not equal to total {} for this batch. Please investigate!",
-                numberOfCasesQueried, total);
+        log.info("Number of cases queried: {}", numberOfCasesQueried);
+        log.info("Search_after for next batch: {}", searchAfter);
+        if (numberOfCasesQueried != batchSize) {
+            log.info("Number of cases queried is less than the batch size. " +
+                "This is probably the last batch!! Good Night!!");
         }
 
         // Finalise + wait for the queue to finish processing
