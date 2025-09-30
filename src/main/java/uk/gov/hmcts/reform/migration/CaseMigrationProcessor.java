@@ -298,8 +298,8 @@ public class CaseMigrationProcessor {
         log.info("Number of cases queried: {}", numberOfCasesQueried);
         log.info("Search_after for next batch: {}", searchAfter);
         if (numberOfCasesQueried != batchSize) {
-            log.info("Number of cases queried is less than the batch size. " +
-                "This is probably the last batch!! Good Night!!");
+            log.info("Number of cases queried is less than the batch size. "
+                + "This is probably the last batch!! Good Night!!");
         }
 
         // Finalise + wait for the queue to finish processing

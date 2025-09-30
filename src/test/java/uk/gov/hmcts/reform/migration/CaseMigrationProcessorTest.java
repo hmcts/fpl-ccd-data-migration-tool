@@ -4,8 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -315,14 +313,13 @@ class CaseMigrationProcessorTest {
 
         @Test
         void shouldMigrateCasesUpToTheGiveBatchSize() {
-            int batchSize = DEFAUT_QUERY_SIZE + 1;
-
             when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(1000);
             when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
                 .thenReturn(createCaseDetails(0, DEFAUT_QUERY_SIZE));
             when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + (DEFAUT_QUERY_SIZE - 1)))
                 .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
 
+            int batchSize = DEFAUT_QUERY_SIZE + 1;
             caseMigrationProcessor.migrateQueryByBatch(QUERY, null, batchSize);
 
             verify(coreCaseDataService, times(batchSize))
