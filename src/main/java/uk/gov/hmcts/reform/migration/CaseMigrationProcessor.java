@@ -49,11 +49,11 @@ public class CaseMigrationProcessor {
     private final ForkJoinPool threadPool;
 
     @Getter
-    private final List<Long> migratedCases = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Long> migratedCases = new ConcurrentLinkedQueue<>();
     @Getter
-    private final List<Long> skippedCases = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Long> skippedCases = new ConcurrentLinkedQueue<>();
     @Getter
-    private final List<Long> failedCases = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Long> failedCases = new ConcurrentLinkedQueue<>();
 
     private final ConcurrentLinkedQueue<Long> casesToMigrate = new ConcurrentLinkedQueue<>();
 
