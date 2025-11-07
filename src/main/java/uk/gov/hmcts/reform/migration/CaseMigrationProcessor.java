@@ -24,6 +24,7 @@ import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
@@ -48,11 +49,11 @@ public class CaseMigrationProcessor {
     private final ForkJoinPool threadPool;
 
     @Getter
-    private final List<Long> migratedCases = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Long> migratedCases = new ConcurrentLinkedQueue<>();
     @Getter
-    private final List<Long> skippedCases = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Long> skippedCases = new ConcurrentLinkedQueue<>();
     @Getter
-    private final List<Long> failedCases = new ArrayList<>();
+    private final ConcurrentLinkedQueue<Long> failedCases = new ConcurrentLinkedQueue<>();
 
     private final ConcurrentLinkedQueue<Long> casesToMigrate = new ConcurrentLinkedQueue<>();
 
@@ -223,6 +224,103 @@ public class CaseMigrationProcessor {
 
             // migrate the failed cases
             this.migrateList(toRetry);
+        }
+    }
+
+    @SneakyThrows
+    public void migrateQueryByBatch(EsQuery query, String searchAfter, int batchSize) {
+        log.info("Batch mode on!");
+        requireNonNull(query);
+        requireNonNull(caseType);
+        requireNonNull(migrationId);
+
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("batchSize must be greater than 0");
+        }
+
+        String userToken =  idamRepository.generateUserToken();
+        if (isBlank(searchAfter)) {
+            log.warn("searchAfter is blank, will migrate the first batch");
+            // Get total cases to migrate if this is the first batch
+            try {
+                int total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query);
+                log.info("Found {} cases to migrate in total, but batch size is {} ", total, batchSize);
+            } catch (Exception e) {
+                log.error("Could not determine the number of cases to search for due to {}",
+                    e.getMessage(), e
+                );
+                log.info("Migration finished unsuccessfully.");
+                return;
+            }
+        } else {
+            log.info("Batch continue with search_after: {}", searchAfter);
+        }
+
+        // Setup ESQuery provider to fill up the queue
+        int pages = paginate(batchSize);
+        log.debug("Found {} pages", pages);
+        boolean complete = false;
+        int page = 0;
+        int numberOfCasesQueried = 0;
+        while (!complete) {
+            try {
+                int querySize = Math.min(defaultQuerySize, batchSize - (page * defaultQuerySize));
+
+                if (querySize <= 0) {
+                    complete = true;
+                    continue;
+                }
+                log.info("Querying page {}, size {}, searchAfter {}", page, querySize, searchAfter);
+                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, querySize,
+                    searchAfter);
+
+                if (cases.isEmpty()) {
+                    complete = true;
+                    continue;
+                }
+
+                numberOfCasesQueried += cases.size();
+                searchAfter = cases.get(cases.size() - 1).getId().toString();
+
+                // add to queue
+                cases.stream()
+                    .map(CaseDetails::getId)
+                    .forEach(casesToMigrate::add);
+
+                page++;
+            } catch (Exception e) {
+                log.error("Could not search for page {}", page, e);
+            }
+        }
+
+
+        finishedLoading = true;
+        log.info("Number of cases queried: {}", numberOfCasesQueried);
+
+        // Finalise + wait for the queue to finish processing
+        boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
+        if (timedOut) {
+            log.error("Timed out after {} seconds", timeout);
+        }
+
+        publishStats(startTime);
+
+        if (retryFailures && this.getFailedCases().size() > 0) {
+            List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+            // reset migration tool, with no more retries allowed
+            this.setupProcessor(false);
+
+            // migrate the failed cases
+            this.migrateList(toRetry);
+        }
+
+        log.info("Search_after for next batch: {}", searchAfter);
+        if (numberOfCasesQueried != batchSize) {
+            log.info("Number of cases queried is less than the batch size. "
+                + "This is probably the last batch!! Good Night!!");
         }
     }
 
