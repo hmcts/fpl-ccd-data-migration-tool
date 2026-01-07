@@ -295,4 +295,69 @@ class CaseMigrationProcessorTest {
         }
 
     }
+
+    @Nested
+    class MigrateByBatchMode {
+        @Test
+        void shouldThrowExceptionIfArgumentInvalid() {
+            assertThatThrownBy(() ->
+                caseMigrationProcessor.migrateQueryByBatch(null, null, 0))
+                .isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() ->
+                caseMigrationProcessor.migrateQueryByBatch(QUERY, "caseId", 0))
+                .isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() ->
+                caseMigrationProcessor.migrateQueryByBatch(QUERY, "caseId", -1))
+                .isInstanceOf(IllegalArgumentException.class);
+        }
+
+        @Test
+        void shouldMigrateCasesUpToTheGiveBatchSize() {
+            when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(23);
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+                .thenReturn(createCaseDetails(0, DEFAUT_QUERY_SIZE));
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + (DEFAUT_QUERY_SIZE - 1)))
+                .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
+
+            int batchSize = DEFAUT_QUERY_SIZE + 1;
+            caseMigrationProcessor.migrateQueryByBatch(QUERY, null, batchSize);
+
+            verify(coreCaseDataService, times(batchSize))
+                .update(eq(USER_TOKEN),
+                    eq(EVENT_ID),
+                    eq(EVENT_SUMMARY),
+                    eq(EVENT_DESCRIPTION),
+                    eq(CASE_TYPE),
+                    caseDetailsArgumentCaptor.capture(),
+                    eq(MIGRATION_ID));
+
+            assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
+                .containsExactlyInAnyOrderElementsOf(LongStream.range(0, batchSize).boxed().toList());
+        }
+
+        @Test
+        void shouldMigrateCasesUpToTheGiveBatchSizeAndSearchAfter() {
+            int batchSize = DEFAUT_QUERY_SIZE + 1;
+            String searchAfter = "" + (DEFAUT_QUERY_SIZE - 1);
+
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, searchAfter))
+                .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + DEFAUT_QUERY_SIZE))
+                .thenReturn(List.of());
+
+            caseMigrationProcessor.migrateQueryByBatch(QUERY, searchAfter, batchSize);
+
+            verify(coreCaseDataService, times(1))
+                .update(eq(USER_TOKEN),
+                    eq(EVENT_ID),
+                    eq(EVENT_SUMMARY),
+                    eq(EVENT_DESCRIPTION),
+                    eq(CASE_TYPE),
+                    caseDetailsArgumentCaptor.capture(),
+                    eq(MIGRATION_ID));
+
+            assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
+                .contains(10L);
+        }
+    }
 }
