@@ -172,7 +172,7 @@ ext {
   junitVersion = "5.11.4"
   powermockVersion = '2.0.9'
   springSecurity   =  '6.5.6'
-  springCloudVersion = '2024.0.2'
+  springCloudVersion = '2024.0.3'
 }
 
 ext['jackson.version'] = '2.14.1'
