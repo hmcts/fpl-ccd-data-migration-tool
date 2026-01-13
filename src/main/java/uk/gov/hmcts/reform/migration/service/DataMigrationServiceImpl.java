@@ -47,7 +47,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-test", this.openCases(),
-        "DFPL-log", this.allNonDeletedCases()
+        "DFPL-log", this.allNonDeletedCases(),
+        "DFPL-2818", this.topLevelFieldExistsQuery("familyManCaseNumber")
         );
 
     private EsQuery allNonDeletedCases() {
@@ -60,18 +61,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
-    private EsQuery openCases() {
-        final MatchQuery openState = MatchQuery.of("state", "Open");
+    private EsQuery closedCases() {
+        final MatchQuery closedState = MatchQuery.of("state", "CLOSED");
 
         return BooleanQuery.builder()
             .must(Must.builder()
-                .clauses(List.of(openState))
+                .clauses(List.of(closedState))
                 .build())
             .build();
     }
 
-    private EsQuery returnedCases() {
-        final MatchQuery openState = MatchQuery.of("state", "RETURNED");
+    private EsQuery openCases() {
+        final MatchQuery openState = MatchQuery.of("state", "Open");
 
         return BooleanQuery.builder()
             .must(Must.builder()
