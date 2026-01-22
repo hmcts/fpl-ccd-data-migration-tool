@@ -13,9 +13,11 @@ import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
+import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -47,9 +49,12 @@ class ElasticSearchRepositoryTest {
     @Mock
     private CoreCaseDataService coreCaseDataService;
 
+    @Mock
+    private DataMigrationService<Map<String, Object>> dataMigrationService;
+
     @BeforeEach
     void setUp() {
-        elasticSearchRepository = new ElasticSearchRepository(coreCaseDataService);
+        elasticSearchRepository = new ElasticSearchRepository(coreCaseDataService, dataMigrationService);
     }
 
     @Test

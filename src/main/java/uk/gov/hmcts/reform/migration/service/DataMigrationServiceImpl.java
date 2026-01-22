@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
 import uk.gov.hmcts.reform.fpl.model.common.Element;
 import uk.gov.hmcts.reform.migration.query.BooleanQuery;
+import uk.gov.hmcts.reform.migration.query.EsClause;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
@@ -20,6 +21,8 @@ import uk.gov.hmcts.reform.migration.query.MustNot;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,63 +38,85 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
+    public static final String STATE_OPEN = "Open";
+    public static final String STATE_RETURNED = "RETURNED";
+    public static final String STATE_CLOSED = "CLOSED";
+    public static final String STTATE_DELETED = "Deleted";
+
 
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-2992", this::triggerOnlyMigration,
         "SNI-8284", this::triggerOnlyMigration,
-        "DFPL-2677", this::triggerOnlyMigration,
-        "DFPL-2677-rollback", this::triggerOnlyMigration
-        );
+        "DFPL-2773", this::triggerOnlyMigration
+    );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-test", this.openCases(),
         "DFPL-log", this.allNonDeletedCases(),
-        "DFPL-2818", this.topLevelFieldExistsQuery("familyManCaseNumber")
-        );
+        "DFPL-2773", this.allCasesNotInStates(STATE_OPEN)
+    );
 
-    private EsQuery allNonDeletedCases() {
-        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+    // ES fields to be fetched for each migration. "reference" and "jurisdiction are always fetched.
+    private final  Map<String, List<String>> esSourceFields = Map.of(
+        "DFPL-2773", List.of("refusedHearingOrders", "refusedHearingOrdersCTSC", "refusedHearingOrdersLA",
+            "refusedHearingOrdersResp0", "refusedHearingOrdersResp1", "refusedHearingOrdersResp2",
+            "refusedHearingOrdersResp3", "refusedHearingOrdersResp4", "refusedHearingOrdersResp5",
+            "refusedHearingOrdersResp6", "refusedHearingOrdersResp7", "refusedHearingOrdersResp8",
+            "refusedHearingOrdersResp9", "refusedHearingOrdersChild0", "refusedHearingOrdersChild1",
+            "refusedHearingOrdersChild2", "refusedHearingOrdersChild3", "refusedHearingOrdersChild4",
+            "refusedHearingOrdersChild5", "refusedHearingOrdersChild6", "refusedHearingOrdersChild7",
+            "refusedHearingOrdersChild8", "refusedHearingOrdersChild9", "refusedHearingOrdersChild10",
+            "refusedHearingOrdersChild11", "refusedHearingOrdersChild12", "refusedHearingOrdersChild13",
+            "refusedHearingOrdersChild14")
+    );
+
+    private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
+        "DFPL-2773", this::filterDfpl2773
+    );
+
+    private EsQuery allCasesInStates(String... states) {
+        final List<EsClause> stateQueries = new ArrayList<>();
+
+        for (String state : states) {
+            stateQueries.add(MatchQuery.of("state", states));
+        }
+
+        return BooleanQuery.builder()
+            .must(Must.builder()
+                .clauses(stateQueries)
+                .build())
+            .build();
+    }
+
+    private EsQuery allCasesNotInStates(String... states) {
+        final List<EsClause> stateQueries = new ArrayList<>();
+
+        for (String state : states) {
+            stateQueries.add(MatchQuery.of("state", state));
+        }
 
         return BooleanQuery.builder()
             .mustNot(MustNot.builder()
-                .clauses(List.of(deletedCases))
+                .clauses(stateQueries)
                 .build())
             .build();
+    }
+
+    private EsQuery allNonDeletedCases() {
+        return allCasesInStates(STTATE_DELETED);
     }
 
     private EsQuery closedCases() {
-        final MatchQuery closedState = MatchQuery.of("state", "CLOSED");
-
-        return BooleanQuery.builder()
-            .must(Must.builder()
-                .clauses(List.of(closedState))
-                .build())
-            .build();
+        return allCasesInStates(STATE_CLOSED);
     }
 
     private EsQuery openCases() {
-        final MatchQuery openState = MatchQuery.of("state", "Open");
-
-        return BooleanQuery.builder()
-            .must(Must.builder()
-                .clauses(List.of(openState))
-                .build())
-            .build();
+        return allCasesInStates(STATE_OPEN);
     }
 
     private EsQuery activeCases() {
-        final MatchQuery openCases = MatchQuery.of("state", "Open");
-        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
-        final MatchQuery returnedCases = MatchQuery.of("state", "RETURNED");
-        final MatchQuery closedCases = MatchQuery.of("state", "CLOSED");
-
-        return BooleanQuery.builder()
-            .mustNot(MustNot.builder()
-                .clauses(List.of(openCases, deletedCases, returnedCases, closedCases))
-                .build())
-            .build();
+        return allCasesNotInStates(STATE_OPEN, STTATE_DELETED, STATE_RETURNED, STATE_CLOSED);
     }
 
     @Override
@@ -110,10 +135,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return queries.get(migrationId);
     }
 
-
     @Override
-    public Predicate<CaseDetails> accepts() {
-        return caseDetails -> true;
+    public Predicate<CaseDetails> accepts(String migrationId) {
+        return predicates.getOrDefault(migrationId, caseDetails -> true);
     }
 
     @Override
@@ -125,6 +149,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
         // Perform Migration
         return migrations.get(migrationId).apply(caseDetails);
+    }
+
+    @Override
+    public List<String> getExtraSourceFields(String migrationId) {
+        return esSourceFields.getOrDefault(migrationId, List.of());
     }
 
     private EsQuery topLevelFieldExistsQuery(String field) {
@@ -273,5 +302,36 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             return LocalDate.parse(element.getValue().get("dateOfIssue").toString(),
                 DateTimeFormatter.ofPattern("d MMMM yyyy"));
         }
+    }
+
+    public boolean filterDfpl2773(CaseDetails caseDetails) {
+       return  !isEmpty(caseDetails.getData().get("refusedHearingOrders"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersCTSC"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersLA"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp0"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp1"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp2"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp3"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp4"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp5"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp6"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp7"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp8"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp9"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild0"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild1"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild2"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild3"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild4"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild5"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild6"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild7"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild8"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild9"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild10"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild11"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild12"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild13"))
+           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild14"));
     }
 }

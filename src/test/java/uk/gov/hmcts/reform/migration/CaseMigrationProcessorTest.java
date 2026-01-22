@@ -17,10 +17,12 @@ import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
+import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -63,6 +65,9 @@ class CaseMigrationProcessorTest {
     @Mock
     private IdamRepository idamRepository;
 
+    @Mock
+    private DataMigrationService<Map<String, Object>> dataMigrationService;
+
     @Captor
     ArgumentCaptor<CaseDetails> caseDetailsArgumentCaptor;
 
@@ -78,6 +83,7 @@ class CaseMigrationProcessorTest {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
+            dataMigrationService,
             DEFAUT_QUERY_SIZE,
             DEFAULT_THREAD_LIMIT,
             0,
@@ -95,6 +101,8 @@ class CaseMigrationProcessorTest {
         when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
             .thenReturn(cases);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
+
         caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(2))
             .update(eq(USER_TOKEN),
@@ -133,6 +141,8 @@ class CaseMigrationProcessorTest {
         when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY),
             eq(EVENT_DESCRIPTION), eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
+
         caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(1))
             .update(eq(USER_TOKEN),
@@ -163,6 +173,8 @@ class CaseMigrationProcessorTest {
         when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
             eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
+
         caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(2))
             .update(eq(USER_TOKEN),
@@ -182,6 +194,7 @@ class CaseMigrationProcessorTest {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
+            dataMigrationService,
             10,
             DEFAULT_THREAD_LIMIT,
             0,
@@ -199,6 +212,7 @@ class CaseMigrationProcessorTest {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
+            dataMigrationService,
             10,
             DEFAULT_THREAD_LIMIT,
             0,
@@ -225,6 +239,7 @@ class CaseMigrationProcessorTest {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
+            dataMigrationService,
             DEFAUT_QUERY_SIZE,
             1,                  // single thread - one migration at a time
             20,                 // 20 seconds between each migration
@@ -242,6 +257,7 @@ class CaseMigrationProcessorTest {
         when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
             eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
         caseMigrationProcessor.migrateQuery(QUERY);
 
         // Ensure only one case migrated
@@ -263,6 +279,7 @@ class CaseMigrationProcessorTest {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
+            dataMigrationService,
             10,
             DEFAULT_THREAD_LIMIT,
             0,
@@ -318,6 +335,7 @@ class CaseMigrationProcessorTest {
                 .thenReturn(createCaseDetails(0, DEFAUT_QUERY_SIZE));
             when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + (DEFAUT_QUERY_SIZE - 1)))
                 .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
+            when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
 
             int batchSize = DEFAUT_QUERY_SIZE + 1;
             caseMigrationProcessor.migrateQueryByBatch(QUERY, null, batchSize);
@@ -344,6 +362,7 @@ class CaseMigrationProcessorTest {
                 .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
             when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + DEFAUT_QUERY_SIZE))
                 .thenReturn(List.of());
+            when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
 
             caseMigrationProcessor.migrateQueryByBatch(QUERY, searchAfter, batchSize);
 

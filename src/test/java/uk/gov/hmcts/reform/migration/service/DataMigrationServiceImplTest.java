@@ -46,7 +46,7 @@ class DataMigrationServiceImplTest {
 
     @Test
     void shouldReturnTrueWhenCourtPresent() {
-        assertThat(dataMigrationService.accepts().test(caseDetails)).isTrue();
+        assertThat(dataMigrationService.accepts("DFPL-test").test(caseDetails)).isTrue();
     }
 
 
