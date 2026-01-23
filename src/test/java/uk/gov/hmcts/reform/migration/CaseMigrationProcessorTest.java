@@ -98,7 +98,7 @@ class CaseMigrationProcessorTest {
     void shouldMigrateCasesOfACaseTypeByParallelProcessing() throws InterruptedException {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         List<CaseDetails> cases = createCaseDetails(1,2);
-        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
             .thenReturn(cases);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
         when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
@@ -134,7 +134,7 @@ class CaseMigrationProcessorTest {
         when(details.getId()).thenReturn(1677777777L);
         List<CaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(details);
-        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
             .thenReturn(caseDetails);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(1);
 
@@ -166,7 +166,7 @@ class CaseMigrationProcessorTest {
         List<CaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(details);
         caseDetails.add(details1);
-        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
             .thenReturn(caseDetails);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
 
@@ -250,7 +250,7 @@ class CaseMigrationProcessorTest {
             10);                // timeout in 10 seconds, should only migrate one case
 
 
-        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
             .thenReturn(caseDetails);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
 
@@ -331,9 +331,10 @@ class CaseMigrationProcessorTest {
         @Test
         void shouldMigrateCasesUpToTheGiveBatchSize() {
             when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(23);
-            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
                 .thenReturn(createCaseDetails(0, DEFAUT_QUERY_SIZE));
-            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + (DEFAUT_QUERY_SIZE - 1)))
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + (DEFAUT_QUERY_SIZE - 1),
+                List.of()))
                 .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
             when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
 
@@ -358,9 +359,9 @@ class CaseMigrationProcessorTest {
             int batchSize = DEFAUT_QUERY_SIZE + 1;
             String searchAfter = "" + (DEFAUT_QUERY_SIZE - 1);
 
-            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, searchAfter))
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, searchAfter, List.of()))
                 .thenReturn(createCaseDetails(DEFAUT_QUERY_SIZE, 1));
-            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + DEFAUT_QUERY_SIZE))
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + DEFAUT_QUERY_SIZE, List.of()))
                 .thenReturn(List.of());
             when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
 
