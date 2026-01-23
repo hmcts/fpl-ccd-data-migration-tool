@@ -356,7 +356,6 @@ class CaseMigrationProcessorTest {
 
         @Test
         void shouldMigrateCasesUpToTheGiveBatchSizeAndSearchAfter() {
-            int batchSize = DEFAUT_QUERY_SIZE + 1;
             String searchAfter = "" + (DEFAUT_QUERY_SIZE - 1);
 
             when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, searchAfter, List.of()))
@@ -365,6 +364,7 @@ class CaseMigrationProcessorTest {
                 .thenReturn(List.of());
             when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> true);
 
+            int batchSize = DEFAUT_QUERY_SIZE + 1;
             caseMigrationProcessor.migrateQueryByBatch(QUERY, searchAfter, batchSize);
 
             verify(coreCaseDataService, times(1))

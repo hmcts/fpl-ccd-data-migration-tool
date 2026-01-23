@@ -13,11 +13,9 @@ import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
-import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -62,7 +60,8 @@ class ElasticSearchRepositoryTest {
             CASE_TYPE,
             QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString()
         )).thenReturn(searchResult);
-        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, null, List.of());
+        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1,
+            null, List.of());
 
         assertThat(caseDetails)
             .isNotNull()
@@ -76,7 +75,8 @@ class ElasticSearchRepositoryTest {
             CASE_TYPE,
             QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString()
         )).thenReturn(null);
-        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, null, List.of());
+        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1,
+            null, List.of());
 
         assertThat(caseDetails)
             .isNotNull()
@@ -96,12 +96,13 @@ class ElasticSearchRepositoryTest {
             QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString()
         )).thenReturn(searchResult);
 
-        List<CaseDetails> returnCaseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, null, List.of());
+        List<CaseDetails> returnCaseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1,
+            null, List.of());
         assertThat(returnCaseDetails).isNotNull();
 
         verify(coreCaseDataService, times(1)).searchCases(USER_TOKEN,
-                                                      CASE_TYPE,
-                                                      INITIAL_QUERY);
+            CASE_TYPE,
+            INITIAL_QUERY);
         assertThat(returnCaseDetails).hasSize(1);
     }
 }
