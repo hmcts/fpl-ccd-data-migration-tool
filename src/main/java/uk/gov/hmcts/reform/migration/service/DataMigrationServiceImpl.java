@@ -77,8 +77,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     );
 
     private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
-//        "DFPL-2773", this::filterDfpl2773,
-//        "DFPL-2773-rollback", this::filterDfpl2773
+        "DFPL-2773", this::filterDfpl2773,
+        "DFPL-2773-rollback", this::filterDfpl2773
     );
 
     private EsQuery allCasesInStates(String... states) {
@@ -311,33 +311,33 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     public boolean filterDfpl2773(CaseDetails caseDetails) {
-       return  !isEmpty(caseDetails.getData().get("refusedHearingOrders"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersCTSC"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersLA"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp0"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp1"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp2"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp3"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp4"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp5"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp6"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp7"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp8"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp9"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild0"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild1"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild2"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild3"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild4"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild5"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild6"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild7"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild8"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild9"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild10"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild11"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild12"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild13"))
-           || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild14"));
+        return  !isEmpty(caseDetails.getData().get("refusedHearingOrders"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersCTSC"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersLA"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp0"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp1"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp2"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp3"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp4"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp5"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp6"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp7"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp8"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersResp9"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild0"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild1"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild2"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild3"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild4"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild5"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild6"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild7"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild8"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild9"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild10"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild11"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild12"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild13"))
+            || !isEmpty(caseDetails.getData().get("refusedHearingOrdersChild14"));
     }
 }
