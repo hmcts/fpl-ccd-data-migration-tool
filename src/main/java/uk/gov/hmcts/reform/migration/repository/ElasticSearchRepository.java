@@ -11,10 +11,8 @@ import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.Sort;
 import uk.gov.hmcts.reform.migration.query.SortOrder;
 import uk.gov.hmcts.reform.migration.query.SortQuery;
-import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.List;
-import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
