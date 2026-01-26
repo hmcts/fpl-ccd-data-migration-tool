@@ -47,6 +47,45 @@ class EsQueryTest {
         assertThat(queryInContext).usingRecursiveComparison().isEqualTo(expectedContext);
     }
 
+    @Test
+    void shouldCreateQueryWithExtraSources() {
+        EsQuery query = new TestClass();
+        Sort sort = Sort.builder()
+            .clauses(List.of(
+                SortQuery.of("data.dateSubmitted", SortOrder.DESC)
+            ))
+            .build();
+        final JSONObject queryInContext = query.toQueryContext(2, sort, List.of("extraField"));
+        final JSONObject expectedContext = new JSONObject(
+            Map.of("_source", List.of("reference", "jurisdiction", "extraField"),
+                "query", Map.of("test", "query"),
+                "track_total_hits", true,
+                "size", 2,
+                "sort", List.of(Map.of("data.dateSubmitted", Map.of("order", "desc")))));
+
+        assertThat(queryInContext).usingRecursiveComparison().isEqualTo(expectedContext);
+    }
+
+    @Test
+    void shouldCreateQueryWithSearchAfterAndExtraSources() {
+        EsQuery query = new TestClass();
+        Sort sort = Sort.builder()
+            .clauses(List.of(
+                SortQuery.of("data.dateSubmitted", SortOrder.DESC)
+            ))
+            .build();
+        final JSONObject queryInContext = query.toQueryContext(2,"searchAfter", sort, List.of("extraField"));
+        final JSONObject expectedContext = new JSONObject(
+            Map.of("_source", List.of("reference", "jurisdiction", "extraField"),
+                "query", Map.of("test", "query"),
+                "track_total_hits", true,
+                "size", 2,
+                "search_after", List.of("searchAfter"),
+                "sort", List.of(Map.of("data.dateSubmitted", Map.of("order", "desc")))));
+
+        assertThat(queryInContext).usingRecursiveComparison().isEqualTo(expectedContext);
+    }
+
     private static class TestClass implements EsQuery {
         @Override
         public Map<String, Object> toMap() {
