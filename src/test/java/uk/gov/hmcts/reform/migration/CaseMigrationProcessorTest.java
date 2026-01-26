@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.EVENT_DESCRIPTION;
 import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.EVENT_ID;
@@ -187,6 +188,22 @@ class CaseMigrationProcessorTest {
 
         assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
             .containsExactlyInAnyOrder(1L, 2L);
+    }
+
+    @Test
+    void shouldNotMigrateCasesIfFiltered() throws InterruptedException {
+        when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
+        List<CaseDetails> cases = createCaseDetails(1,2);
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
+            .thenReturn(cases);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> false);
+
+        caseMigrationProcessor.migrateQuery(QUERY);
+
+        assertThat(caseMigrationProcessor.getMigratedCases()).isEmpty();
+        assertThat(caseMigrationProcessor.getSkippedCases()).contains(1L, 2L);
+        verifyNoInteractions(coreCaseDataService);
     }
 
     @Test
@@ -380,6 +397,27 @@ class CaseMigrationProcessorTest {
 
             assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
                 .contains(10L);
+        }
+
+        @Test
+        void shouldNotMigrateCasesWhenFiltered() {
+            String searchAfter = "" + (DEFAUT_QUERY_SIZE - 1);
+
+            List<CaseDetails> caseDetails = createCaseDetails(DEFAUT_QUERY_SIZE, 1);
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, searchAfter,
+                List.of()))
+                .thenReturn(caseDetails);
+            when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, "" + DEFAUT_QUERY_SIZE,
+                List.of()))
+                .thenReturn(List.of());
+            when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(obj -> false);
+
+            int batchSize = DEFAUT_QUERY_SIZE + 1;
+            caseMigrationProcessor.migrateQueryByBatch(QUERY, searchAfter, batchSize);
+
+            assertThat(caseMigrationProcessor.getMigratedCases()).isEmpty();
+            assertThat(caseMigrationProcessor.getSkippedCases()).contains(10L);
+            verifyNoInteractions(coreCaseDataService);
         }
     }
 }

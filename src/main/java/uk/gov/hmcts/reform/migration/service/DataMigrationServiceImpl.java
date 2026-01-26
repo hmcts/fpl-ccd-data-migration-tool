@@ -71,11 +71,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     // ES fields to be fetched for each migration. "reference" and "jurisdiction are always fetched.
     private final  Map<String, List<String>> esSourceFields = Map.of(
+        "DFPL-test", List.of("court"),
         "DFPL-2773", DFPL2773_SOURCES,
         "DFPL-2773-rollback", DFPL2773_SOURCES
     );
 
     private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
+        "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
         "DFPL-2773", this::filterDfpl2773,
         "DFPL-2773-rollback", this::filterDfpl2773
     );
