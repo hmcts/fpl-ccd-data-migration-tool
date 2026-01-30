@@ -40,7 +40,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String STATE_OPEN = "Open";
     public static final String STATE_RETURNED = "RETURNED";
     public static final String STATE_CLOSED = "CLOSED";
-    public static final String STTATE_DELETED = "Deleted";
+    public static final String STATE_DELETED = "Deleted";
     public static final List<String> DFPL2773_SOURCES =  List.of(
         "refusedHearingOrders", "refusedHearingOrdersCTSC", "refusedHearingOrdersLA",
         "refusedHearingOrdersResp0", "refusedHearingOrdersResp1", "refusedHearingOrdersResp2",
@@ -111,7 +111,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private EsQuery allNonDeletedCases() {
-        return allCasesInStates(STTATE_DELETED);
+        return allCasesInStates(STATE_DELETED);
     }
 
     private EsQuery closedCases() {
@@ -123,7 +123,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private EsQuery activeCases() {
-        return allCasesNotInStates(STATE_OPEN, STTATE_DELETED, STATE_RETURNED, STATE_CLOSED);
+        return allCasesNotInStates(STATE_OPEN, STATE_DELETED, STATE_RETURNED, STATE_CLOSED);
     }
 
     @Override
