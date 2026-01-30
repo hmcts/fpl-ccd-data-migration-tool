@@ -45,10 +45,21 @@ class DataMigrationServiceImplTest {
     }
 
     @Test
-    void shouldReturnTrueWhenCourtPresent() {
-        assertThat(dataMigrationService.accepts().test(caseDetails)).isTrue();
+    void shouldTestPredicatesWhenProvided() {
+        assertThat(dataMigrationService.accepts("DFPL-test").test(caseDetails)).isTrue();
+        assertThat(dataMigrationService.accepts("DFPL-test")
+            .test(CaseDetails.builder().data(Map.of()).build())).isFalse();
     }
 
+    @Test
+    void shouldReturnTrueByDefault() {
+        assertThat(dataMigrationService.accepts("someMigrationId").test(caseDetails)).isTrue();
+    }
+
+    @Test
+    void shouldReturnSourceFields() {
+        assertThat(dataMigrationService.getExtraSourceFields("DFPL-test")).isEqualTo(List.of("court"));
+    }
 
     @Test
     void shouldThrowExceptionWhenMigrationKeyIsNotSet() {

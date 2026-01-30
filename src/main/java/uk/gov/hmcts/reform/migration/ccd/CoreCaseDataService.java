@@ -50,7 +50,7 @@ public class CoreCaseDataService {
 
         CaseDetails updatedCaseDetails = startEventResponse.getCaseDetails();
 
-        if (dataMigrationService.accepts().test(updatedCaseDetails)) {
+        if (dataMigrationService.accepts(migrationId).test(updatedCaseDetails)) {
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
 
             Map<String, Object> migratedFields = dataMigrationService.migrate(
