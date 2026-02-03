@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,7 +83,7 @@ class CoreCaseDataServiceTest {
         assertThat(update.getId()).isEqualTo(CASE_ID);
         assertThat(update.getData().get(MIGRATION_ID_KEY)).isEqualTo(DFPL_1124);
 
-        verify(dataMigrationService).accepts();
+        verify(dataMigrationService).accepts(DFPL_1124);
         verify(dataMigrationService).migrate(caseDetails3, DFPL_1124);
         verify(coreCaseDataApi).startEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, "30",
             null, CASE_TYPE, String.valueOf(CASE_ID), EVENT_ID);
@@ -117,7 +118,7 @@ class CoreCaseDataServiceTest {
         ))
             .thenReturn(startEventResponse);
 
-        when(dataMigrationService.accepts())
+        when(dataMigrationService.accepts(any()))
             .thenReturn(caseDetails1 -> false);
 
         //when
@@ -125,7 +126,7 @@ class CoreCaseDataServiceTest {
             DFPL_1124);
         //then
         assertThat(update).isNull();
-        verify(dataMigrationService).accepts();
+        verify(dataMigrationService).accepts(any());
         verify(dataMigrationService, never()).migrate(caseDetails3, DFPL_1124);
         verify(coreCaseDataApi).startEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, "30",
             null, CASE_TYPE, String.valueOf(CASE_ID), EVENT_ID);
@@ -153,7 +154,7 @@ class CoreCaseDataServiceTest {
             .data(data)
             .build();
 
-        when(dataMigrationService.accepts())
+        when(dataMigrationService.accepts(any()))
             .thenReturn(caseDetails1 -> true);
 
         StartEventResponse startEventResponse = StartEventResponse.builder()

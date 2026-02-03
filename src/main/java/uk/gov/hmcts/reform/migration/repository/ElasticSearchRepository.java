@@ -44,7 +44,8 @@ public class ElasticSearchRepository {
     }
 
     @SneakyThrows
-    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, String after) {
+    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, String after,
+                                    List<String> extraSourceField) {
         requireNonNull(query);
         SearchResult result = null;
 
@@ -54,8 +55,8 @@ public class ElasticSearchRepository {
         while (!completed && retries < 20) {
             try {
                 String queryStr = !isEmpty(after)
-                    ? query.toQueryContext(size, after, SORT_BY_REF).toString()
-                    : query.toQueryContext(size, SORT_BY_REF).toString();
+                    ? query.toQueryContext(size, after, SORT_BY_REF, extraSourceField).toString()
+                    : query.toQueryContext(size, SORT_BY_REF, extraSourceField).toString();
 
                 result = search(userToken, caseType, queryStr);
                 completed = true;
@@ -69,7 +70,7 @@ public class ElasticSearchRepository {
 
         if (isEmpty(result)) {
             log.error("ES Query returned no cases after 20 retries, {}, {}",
-                query.toQueryContext(size, SORT_BY_REF), after);
+                query.toQueryContext(size, SORT_BY_REF, extraSourceField), after);
             return List.of();
         }
         return result.getCases();

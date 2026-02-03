@@ -11,13 +11,16 @@ import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
+import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.math.RoundingMode.UP;
@@ -38,6 +41,7 @@ public class CaseMigrationProcessor {
     private final CoreCaseDataService coreCaseDataService;
     private final ElasticSearchRepository elasticSearchRepository;
     private final IdamRepository idamRepository;
+    private final DataMigrationService<Map<String, Object>> dataMigrationService;
     private final int defaultQuerySize;
     private final int defaultThreadLimit;
     private final int defaultThreadDelay;
@@ -67,6 +71,7 @@ public class CaseMigrationProcessor {
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
                                   ElasticSearchRepository elasticSearchRepository,
                                   IdamRepository idamRepository,
+                                  DataMigrationService<Map<String, Object>> dataMigrationService,
                                   @Value("${default.query.size}") int defaultQuerySize,
                                   @Value("${default.thread.limit:8}") int defaultThreadLimit,
                                   @Value("${default.thread.delay:0}") int defaultThreadDelay,
@@ -78,6 +83,7 @@ public class CaseMigrationProcessor {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
+        this.dataMigrationService = dataMigrationService;
         this.defaultQuerySize = defaultQuerySize;
         this.defaultThreadLimit = defaultThreadLimit;
         this.defaultThreadDelay = defaultThreadDelay * 1000;
@@ -159,6 +165,7 @@ public class CaseMigrationProcessor {
         requireNonNull(query);
         requireNonNull(caseType);
         requireNonNull(migrationId);
+        final List<String> extraSourceField = dataMigrationService.getExtraSourceFields(migrationId);
 
         String userToken =  idamRepository.generateUserToken();
 
@@ -184,7 +191,7 @@ public class CaseMigrationProcessor {
         while (!complete) {
             try {
                 List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, defaultQuerySize,
-                    searchAfter);
+                    searchAfter, extraSourceField);
 
                 if (cases.isEmpty()) {
                     complete = true;
@@ -193,10 +200,7 @@ public class CaseMigrationProcessor {
 
                 searchAfter = cases.get(cases.size() - 1).getId().toString();
 
-                // add to queue
-                cases.stream()
-                    .map(CaseDetails::getId)
-                    .forEach(casesToMigrate::add);
+                addCasesToMigrateQueue(cases);
 
                 page++;
             } catch (Exception e) {
@@ -233,6 +237,7 @@ public class CaseMigrationProcessor {
         requireNonNull(query);
         requireNonNull(caseType);
         requireNonNull(migrationId);
+        final List<String> extraSourceField = dataMigrationService.getExtraSourceFields(migrationId);
 
         if (batchSize <= 0) {
             throw new IllegalArgumentException("batchSize must be greater than 0");
@@ -272,7 +277,7 @@ public class CaseMigrationProcessor {
                 }
                 log.info("Querying page {}, size {}, searchAfter {}", page, querySize, searchAfter);
                 List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, querySize,
-                    searchAfter);
+                    searchAfter, extraSourceField);
 
                 if (cases.isEmpty()) {
                     complete = true;
@@ -282,10 +287,7 @@ public class CaseMigrationProcessor {
                 numberOfCasesQueried += cases.size();
                 searchAfter = cases.get(cases.size() - 1).getId().toString();
 
-                // add to queue
-                cases.stream()
-                    .map(CaseDetails::getId)
-                    .forEach(casesToMigrate::add);
+                addCasesToMigrateQueue(cases);
 
                 page++;
             } catch (Exception e) {
@@ -358,6 +360,19 @@ public class CaseMigrationProcessor {
             // migrate the failed cases
             this.migrateList(toRetry);
         }
+    }
+
+    private void addCasesToMigrateQueue(List<CaseDetails> cases) {
+        final Predicate<CaseDetails> filterFunc = dataMigrationService.accepts(migrationId);
+
+        cases.forEach((caseDetails) -> {
+            Long caseId = caseDetails.getId();
+            if (filterFunc.test(caseDetails)) {
+                casesToMigrate.add(caseId);
+            } else {
+                skippedCases.add(caseId);
+            }
+        });
     }
 
     private int paginate(int total) {

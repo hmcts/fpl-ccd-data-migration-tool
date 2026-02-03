@@ -39,7 +39,7 @@ class ElasticSearchRepositoryTest {
             .build())
         .build();
 
-    private static final String INITIAL_QUERY = QUERY.toQueryContext(1, SORT_BY_REF).toString();
+    private static final String INITIAL_QUERY = QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString();
     private static final String AFTER_QUERY = QUERY.toQueryContext(1, 1, SORT_BY_REF).toString();
 
     private ElasticSearchRepository elasticSearchRepository;
@@ -58,9 +58,10 @@ class ElasticSearchRepositoryTest {
         when(coreCaseDataService.searchCases(
             USER_TOKEN,
             CASE_TYPE,
-            QUERY.toQueryContext(1, SORT_BY_REF).toString()
+            QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString()
         )).thenReturn(searchResult);
-        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, null);
+        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1,
+            null, List.of());
 
         assertThat(caseDetails)
             .isNotNull()
@@ -72,9 +73,10 @@ class ElasticSearchRepositoryTest {
         when(coreCaseDataService.searchCases(
             USER_TOKEN,
             CASE_TYPE,
-            QUERY.toQueryContext(1, SORT_BY_REF).toString()
+            QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString()
         )).thenReturn(null);
-        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, null);
+        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1,
+            null, List.of());
 
         assertThat(caseDetails)
             .isNotNull()
@@ -91,15 +93,16 @@ class ElasticSearchRepositoryTest {
         when(coreCaseDataService.searchCases(
             USER_TOKEN,
             CASE_TYPE,
-            QUERY.toQueryContext(1, SORT_BY_REF).toString()
+            QUERY.toQueryContext(1, SORT_BY_REF, List.of()).toString()
         )).thenReturn(searchResult);
 
-        List<CaseDetails> returnCaseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, null);
+        List<CaseDetails> returnCaseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1,
+            null, List.of());
         assertThat(returnCaseDetails).isNotNull();
 
         verify(coreCaseDataService, times(1)).searchCases(USER_TOKEN,
-                                                      CASE_TYPE,
-                                                      INITIAL_QUERY);
+            CASE_TYPE,
+            INITIAL_QUERY);
         assertThat(returnCaseDetails).hasSize(1);
     }
 }
