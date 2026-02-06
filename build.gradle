@@ -203,7 +203,7 @@ dependencies {
   implementation group: 'com.github.hmcts.java-logging', name: 'logging-appinsights', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '3.0.0'
-  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '4.9.2'
+  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.7.0'
 
