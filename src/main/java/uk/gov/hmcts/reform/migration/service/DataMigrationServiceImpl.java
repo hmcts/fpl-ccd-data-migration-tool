@@ -110,7 +110,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private EsQuery allNonDeletedCases() {
-        return allCasesInStates(STATE_DELETED);
+        return allCasesNotInStates(STATE_DELETED);
     }
 
     private EsQuery closedCases() {
