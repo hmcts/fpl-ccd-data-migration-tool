@@ -17,6 +17,20 @@
 
   <!--Please add all the temporary suppression under the below section-->
   <suppress>
+    <notes><![CDATA[
+   file name: spring-boot-3.4.5.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.boot/spring-boot@.*$</packageUrl>
+    <cve>CVE-2026-22731</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+   file name: spring-security-web-6.4.5.jar
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-web@.*$</packageUrl>
+    <cve>CVE-2026-22732</cve>
+  </suppress>
+  <suppress>
     <notes>Temporary Suppression</notes>
     <cve>CVE-2023-52428</cve>
     <cve>CVE-2024-38820</cve>
