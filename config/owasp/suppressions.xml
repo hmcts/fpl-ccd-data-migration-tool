@@ -177,7 +177,6 @@
    <notes>
    file names: spring-security-config-6.5.7.jar, spring-security-core-6.4.5.jar, spring-security-crypto-6.4.5.jar, spring-security-oauth2-client-6.5.7.jar, spring-security-oauth2-core-6.5.7.jar, spring-security-oauth2-jose-6.5.7.jar, spring-security-oauth2-resource-server-6.5.7.jar, spring-security-web-6.4.5.jar
    </notes>
-   <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-config@.*$</packageUrl>
    <cve>CVE-2026-22748</cve>
    <cve>CVE-2026-22751</cve>
    <cve>CVE-2026-22746</cve>
