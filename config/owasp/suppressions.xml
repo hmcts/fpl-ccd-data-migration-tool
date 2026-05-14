@@ -152,7 +152,7 @@
     <cve>CVE-2023-20861</cve>
   </suppress>
   
-  <!--DFPL--3225-->
+  <!--DFPL-3225-->
   <suppress>
    <notes>
    file names: spring-aop-6.2.6.jar, spring-beans-6.2.6.jar, spring-context-6.2.6.jar, spring-context-support-6.2.6.jar, spring-core-6.2.6.jar, spring-expression-6.2.6.jar, spring-jcl-6.2.6.jar, spring-web-6.2.6.jar, spring-webmvc-6.2.6.jar
@@ -182,7 +182,7 @@
    <cve>CVE-2026-22751</cve>
    <cve>CVE-2026-22746</cve>
 </suppress>
-<!--End of DFPL--3225-->
+<!--End of DFPL-3225-->
 
   <!--End of temporary suppression section -->
 
