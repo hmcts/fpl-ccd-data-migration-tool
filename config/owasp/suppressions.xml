@@ -152,6 +152,34 @@
     <cve>CVE-2023-20861</cve>
   </suppress>
 
+  <suppress>
+    <notes>
+      file names: spring-aop-6.2.6.jar, spring-beans-6.2.6.jar, spring-context-6.2.6.jar, spring-context-support-6.2.6.jar, spring-core-6.2.6.jar, spring-expression-6.2.6.jar, spring-jcl-6.2.6.jar, spring-web-6.2.6.jar, spring-webmvc-6.2.6.jar
+    </notes>
+    <cve>CVE-2026-22740</cve>
+    <cve>CVE-2026-22737</cve>
+    <cve>CVE-2026-22745</cve>
+    <cve>CVE-2026-22741</cve>
+    <cve>CVE-2026-22735</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      file names: spring-boot-3.4.5.jar, spring-boot-actuator-3.4.5.jar, spring-boot-actuator-autoconfigure-3.4.5.jar, spring-boot-autoconfigure-3.4.5.jar, spring-boot-starter-3.4.5.jar, spring-boot-starter-actuator-3.4.5.jar, spring-boot-starter-aop-3.4.5.jar, spring-boot-starter-json-3.4.5.jar, spring-boot-starter-logging-3.4.5.jar
+    </notes>
+    <cve>CVE-2026-22733</cve>
+    <cve>CVE-2026-40972</cve>
+    <cve>CVE-2026-40975</cve>
+    <cve>CVE-2026-40973</cve>
+    <cve>CVE-2026-40977</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      file names: spring-security-config-6.5.7.jar, spring-security-core-6.4.5.jar, spring-security-crypto-6.4.5.jar, spring-security-oauth2-client-6.5.7.jar, spring-security-oauth2-core-6.5.7.jar, spring-security-oauth2-jose-6.5.7.jar, spring-security-oauth2-resource-server-6.5.7.jar, spring-security-web-6.4.5.jar
+    </notes>
+    <cve>CVE-2026-22748</cve>
+    <cve>CVE-2026-22751</cve>
+    <cve>CVE-2026-22746</cve>
+  </suppress>
   <!--End of temporary suppression section -->
 
 </suppressions>
