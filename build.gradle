@@ -3,7 +3,6 @@ plugins {
   id 'checkstyle'
   id 'jacoco'
   id 'java'
-  id "io.freefair.lombok" version "6.6.3"
   id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '3.5.14'
   id 'com.github.kt3k.coveralls' version '2.12.2'
@@ -169,7 +168,7 @@ repositories {
 ext {
   log4JVersion = "2.25.4"
   lombokVersion = "1.18.42"
-  junitVersion = "5.11.4"
+  junitVersion = "5.12.2"
   powermockVersion = '2.0.9'
   springSecurity   =  '6.5.7'
   springCloudVersion = '2025.1.1'
@@ -263,7 +262,7 @@ configurations.all {
 test {
   timeout = Duration.ofMinutes(30)
   environment("AZURE_APPLICATIONINSIGHTS_INSTRUMENTATIONKEY", "some-key")
-  systemProperty 'java.locale.providers', 'COMPAT'
+  systemProperty 'java.locale.providers', 'CLDR'
 
   useJUnitPlatform()
 
