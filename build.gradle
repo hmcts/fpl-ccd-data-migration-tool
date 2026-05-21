@@ -7,7 +7,7 @@ plugins {
   id 'org.springframework.boot' version '3.5.14'
   id 'com.github.kt3k.coveralls' version '2.12.2'
   id 'com.github.ben-manes.versions' version '0.54.0'
-  id 'org.sonarqube' version '4.4.1.3373'
+  id 'org.sonarqube' version '6.2.0.5505'
   id 'uk.gov.hmcts.java' version '0.12.70'
 }
 
@@ -133,7 +133,7 @@ sonarqube {
     property "sonar.projectKey", "fpl-ccd-case-migration-tool"
     property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
     property "sonar.exclusions", "**/exception/*.java,**/domain/*.java,**/common/*.java,**/repository/*.java,**/service/*.java,**/ccd/*.java,**/migration/auth/*.java,**/migration/*.java,**/ccd/HttpMessageConverterConfiguration.java,**/util/ResourceReader.java,**/model/*.java"
-    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
   }
 }
 
