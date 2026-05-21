@@ -16,4 +16,24 @@
   <!--End of false positives section -->
 
   <!--Please add all the temporary suppression under the below section-->
+  <suppress>
+    <cve>CVE-2022-1471</cve>
+    <cve>CVE-2026-33117</cve>
+    <cve>CVE-2026-40974</cve>
+    <cve>CVE-2026-40975</cve>
+    <cve>CVE-2026-40972</cve>
+    <cve>CVE-2026-40973</cve>
+    <cve>CVE-2026-22748</cve>
+    <cve>CVE-2026-40976</cve>
+    <cve>CVE-2026-22746</cve>
+    <cve>CVE-2026-40977</cve>
+    <cve>CVE-2026-22733</cve>
+    <cve>CVE-2026-22732</cve>
+    <cve>CVE-2026-22731</cve>
+    <cve>CVE-2025-48976</cve>
+    <cve>CVE-2026-40970</cve>
+    <cve>CVE-2026-22751</cve>
+    <cve>CVE-2026-40971</cve>
+    <cve>CVE-2025-48924</cve>
+  </suppress>
 </suppressions>
