@@ -130,10 +130,10 @@ project.tasks['check'].dependsOn integration
 sonarqube {
   properties {
     property "sonar.projectName", "fpl-ccd-case-migration-tool"
-    property "sonar.projectKey", "fpl-ccd-case-migration-tool"
-    property "sonar.jacoco.reportPath", "${project.buildDir}/jacoco/test.exec"
-    property "sonar.exclusions", "**/exception/*.java,**/domain/*.java,**/common/*.java,**/repository/*.java,**/service/*.java,**/ccd/*.java,**/migration/auth/*.java,**/migration/*.java,**/ccd/HttpMessageConverterConfiguration.java,**/util/ResourceReader.java,**/model/*.java"
     property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    property "sonar.pitest.mode", "reuseReport"
+    property "sonar.pitest.reportsDirectory", "build/reports/pitest"
+    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java, **/testingsupport/**, **MigrateCaseController.java, **/controllers/support/**"
   }
 }
 
