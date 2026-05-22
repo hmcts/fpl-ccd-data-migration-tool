@@ -7,7 +7,7 @@ plugins {
   id 'org.springframework.boot' version '3.5.14'
   id 'com.github.kt3k.coveralls' version '2.12.2'
   id 'com.github.ben-manes.versions' version '0.54.0'
-  id 'org.sonarqube' version '6.2.0.5505'
+  id 'org.sonarqube' version '5.1.0.4882'
   id 'uk.gov.hmcts.java' version '0.12.70'
 }
 
@@ -124,10 +124,10 @@ jacocoTestReport {
   }
 }
 
-project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
+project.tasks['sonar'].dependsOn test, integration, jacocoTestReport
 project.tasks['check'].dependsOn integration
 
-sonarqube {
+sonar {
   properties {
     property "sonar.projectName", "fpl-ccd-case-migration-tool"
     property "sonar.projectKey", "fpl-ccd-case-migration-tool"
