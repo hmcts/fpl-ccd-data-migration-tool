@@ -21,9 +21,7 @@ import java.util.List;
     "uk.gov.hmcts.reform.fpl"
 }, scanBasePackageClasses = {IdamClient.class})
 @EnableFeignClients(basePackages = {
-    "uk.gov.hmcts.reform.idam.client",
-    "uk.gov.hmcts.reform.ccd.client",
-    "uk.gov.hmcts.reform.authorisation",
+    "uk.gov.hmcts.reform.idam.client"
 })
 public class CaseMigrationRunner implements CommandLineRunner {
 
