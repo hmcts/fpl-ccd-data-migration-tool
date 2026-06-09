@@ -57,7 +57,7 @@ class EsQueryTest {
             .build();
         final JSONObject queryInContext = query.toQueryContext(2, sort, List.of("extraField"));
         final JSONObject expectedContext = new JSONObject(
-            Map.of("_source", List.of("reference", "jurisdiction", "extraField"),
+            Map.of("_source", List.of("reference", "jurisdiction", "data.extraField"),
                 "query", Map.of("test", "query"),
                 "track_total_hits", true,
                 "size", 2,
@@ -76,7 +76,7 @@ class EsQueryTest {
             .build();
         final JSONObject queryInContext = query.toQueryContext(2,"searchAfter", sort, List.of("extraField"));
         final JSONObject expectedContext = new JSONObject(
-            Map.of("_source", List.of("reference", "jurisdiction", "extraField"),
+            Map.of("_source", List.of("reference", "jurisdiction", "data.extraField"),
                 "query", Map.of("test", "query"),
                 "track_total_hits", true,
                 "size", 2,

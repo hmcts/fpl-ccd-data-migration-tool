@@ -35,7 +35,7 @@ public interface EsQuery extends EsClause {
     default JSONObject toQueryContext(int size, Sort sort, List<String> extraSourceFields) {
         final List<String> sourceFields = new ArrayList<>(DEFAULT_SOURCE_FIELDS);
         if (!isEmpty(extraSourceFields)) {
-            extraSourceFields.forEach(field -> {;
+            extraSourceFields.forEach(field -> {
                 if (!sourceFields.contains(field)) {
                     sourceFields.add("data." + field);
                 }
@@ -53,7 +53,7 @@ public interface EsQuery extends EsClause {
     default JSONObject toQueryContext(int size, String after, Sort sort, List<String> extraSourceFields) {
         final List<String> sourceFields = new ArrayList<>(DEFAULT_SOURCE_FIELDS);
         if (!isEmpty(extraSourceFields)) {
-            extraSourceFields.forEach(field -> {;
+            extraSourceFields.forEach(field -> {
                 if (!sourceFields.contains(field)) {
                     sourceFields.add("data." + field);
                 }
