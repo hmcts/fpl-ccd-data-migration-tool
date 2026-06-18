@@ -33,10 +33,13 @@ public interface EsQuery extends EsClause {
     }
 
     default JSONObject toQueryContext(int size, Sort sort, List<String> extraSourceFields) {
-        List<String> sourceFields = DEFAULT_SOURCE_FIELDS;
+        final List<String> sourceFields = new ArrayList<>(DEFAULT_SOURCE_FIELDS);
         if (!isEmpty(extraSourceFields)) {
-            sourceFields = new ArrayList<>(DEFAULT_SOURCE_FIELDS);
-            sourceFields.addAll(extraSourceFields);
+            extraSourceFields.forEach(field -> {
+                if (!sourceFields.contains(field)) {
+                    sourceFields.add("data." + field);
+                }
+            });
         }
         return new JSONObject(Map.of(
             "size", size,
@@ -48,10 +51,13 @@ public interface EsQuery extends EsClause {
     }
 
     default JSONObject toQueryContext(int size, String after, Sort sort, List<String> extraSourceFields) {
-        List<String> sourceFields = DEFAULT_SOURCE_FIELDS;
+        final List<String> sourceFields = new ArrayList<>(DEFAULT_SOURCE_FIELDS);
         if (!isEmpty(extraSourceFields)) {
-            sourceFields = new ArrayList<>(DEFAULT_SOURCE_FIELDS);
-            sourceFields.addAll(extraSourceFields);
+            extraSourceFields.forEach(field -> {
+                if (!sourceFields.contains(field)) {
+                    sourceFields.add("data." + field);
+                }
+            });
         }
         return new JSONObject(Map.of(
             "size", size,

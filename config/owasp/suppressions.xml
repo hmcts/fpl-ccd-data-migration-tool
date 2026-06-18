@@ -50,5 +50,8 @@
     <cve>CVE-2026-41838</cve>
     <cve>CVE-2026-41003</cve>
     <cve>CVE-2026-41694</cve>
+    <!-- could be resolved by upgrading spring-boot to 3.5.15 -->
+    <cve>CVE-2026-41853</cve>
+    <cve>CVE-2026-41854</cve>
   </suppress>
 </suppressions>
