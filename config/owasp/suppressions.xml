@@ -53,13 +53,15 @@
     <!-- could be resolved by upgrading spring-boot to 3.5.15 -->
     <cve>CVE-2026-41853</cve>
     <cve>CVE-2026-41854</cve>
-    <cve>CVE-2026-54515</cve>
-    <cve>CVE-2026-54428</cve>
+
+    <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54513</cve>
     <cve>CVE-2026-54514</cve>
+    <cve>CVE-2026-54515</cve>
     <cve>CVE-2026-47838</cve>
     <cve>CVE-2026-41706</cve>
-    <cve>CVE-2026-54512</cve>
     <cve>CVE-2026-54399</cve>
+    <cve>CVE-2026-54428</cve>
+    <cve>CVE-2026-49844</cve>
   </suppress>
 </suppressions>
