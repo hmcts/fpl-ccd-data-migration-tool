@@ -52,7 +52,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-3290", this::triggerOnlyMigration,
-        "DFPL-3213", this::triggerOnlyMigration
+        "DFPL-3213", this::triggerOnlyMigration,
         "DFPL-2421", this::triggerOnlyMigration,
         "DFPL-2421-rollback", this::triggerOnlyMigration,
         "DFPL-3306", this::triggerOnlyMigration,
@@ -76,9 +76,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
         "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
-        "DFPL-2773", this::filterDfpl2773,
-        "DFPL-2773-rollback", this::filterDfpl2773,
-        "DFPL-3213", this::filterDfpl3213
+        "DFPL-3213", this::filterDfpl3213,
         "DFPL-2421", this::filter2421,
         "DFPL-2421-rollback", this::filter2421Rollback
     );
