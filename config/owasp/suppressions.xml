@@ -14,7 +14,7 @@
   </suppress>
   <!--End of false positives section -->
 
-  <!--Please add all the temporary suppression under the below section-->
+  <!--Please add all the temporary suppression under the below section
   <suppress>
-  </suppress>
+  </suppress> -->
 </suppressions>
