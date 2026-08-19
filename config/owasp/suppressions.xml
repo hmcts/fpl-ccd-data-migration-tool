@@ -11,13 +11,11 @@
     <cve>CVE-2020-10663</cve>
     <cve>CVE-2018-1258</cve>
     <cve>CVE-2020-7712</cve>
-    <cve>CVE-2023-35116</cve>
   </suppress>
   <!--End of false positives section -->
 
   <!--Please add all the temporary suppression under the below section-->
   <suppress>
-    <cve>CVE-2022-1471</cve>
     <cve>CVE-2026-33117</cve>
     <cve>CVE-2026-40974</cve>
     <cve>CVE-2026-40975</cve>
@@ -34,7 +32,6 @@
     <cve>CVE-2026-40970</cve>
     <cve>CVE-2026-22751</cve>
     <cve>CVE-2026-40971</cve>
-    <cve>CVE-2025-48924</cve>
     <cve>CVE-2026-41842</cve>
     <cve>CVE-2026-41850</cve>
     <cve>CVE-2026-41851</cve>
@@ -50,15 +47,8 @@
     <cve>CVE-2026-41838</cve>
     <cve>CVE-2026-41003</cve>
     <cve>CVE-2026-41694</cve>
-    <!-- could be resolved by upgrading spring-boot to 3.5.15 -->
     <cve>CVE-2026-41853</cve>
     <cve>CVE-2026-41854</cve>
-
-    <cve>CVE-2026-54512</cve>
-    <cve>CVE-2026-54513</cve>
-    <cve>CVE-2026-54514</cve>
-    <cve>CVE-2026-54515</cve>
-    <cve>CVE-2026-47838</cve>
     <cve>CVE-2026-41706</cve>
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
