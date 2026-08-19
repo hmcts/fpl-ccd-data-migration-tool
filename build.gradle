@@ -111,7 +111,7 @@ task smoke(type: Test) {
 
 checkstyle {
   maxWarnings = 0
-  toolVersion = '13.10.0'
+  toolVersion = '13.11.0'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -171,12 +171,12 @@ ext {
   junitVersion = "5.12.2"
   powermockVersion = '2.0.9'
   springSecurity   =  '6.5.11'
-  springCloudVersion = '2025.0.2'
+  springCloudVersion = '2025.0.3'
 }
 
-ext['jackson.version'] = '2.14.1'
-ext['snakeyaml.version'] = '1.33'
-ext['spring-security.version'] = '6.4.5'
+ext['jackson.version'] = '2.18.8'
+ext['snakeyaml.version'] = '2.0'
+ext['spring-security.version'] = '6.5.11'
 
 dependencies {
   implementation("org.springframework.cloud:spring-cloud-starter-bootstrap")
@@ -190,7 +190,7 @@ dependencies {
   implementation group: 'org.springframework.security', name: 'spring-security-oauth2-core', version: springSecurity
   implementation group: 'org.springframework.security', name: 'spring-security-config', version: springSecurity
 
-  implementation group: 'commons-io', name: 'commons-io', version: '2.22.0'
+  implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.6.3'
   implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.6.3'
@@ -200,7 +200,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.2'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.5'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.3.0'
 
   implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.1.1'
