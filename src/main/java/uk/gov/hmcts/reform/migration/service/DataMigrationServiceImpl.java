@@ -37,6 +37,7 @@ import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
+    private final ObjectMapper objectMapper = new ObjectMapper();
     public static final String STATE_OPEN = "Open";
     public static final String STATE_RETURNED = "RETURNED";
     public static final String STATE_CLOSED = "CLOSED";
@@ -45,13 +46,20 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
 
     public static final String COURT = "court";
+    public static final String CASE_MANAGEMENT_LOCATION = "caseManagementLocation";
+    public static final String BASE_LOCATION =  "baseLocation";
+    public static final String FLEETWOOD_COURT_CODE = "401452";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-2423", this::triggerOnlyMigration,
         "DFPL-2423-rollback", this::triggerOnlyMigration,
+        "DFPL-3290", this::triggerOnlyMigration,
+        "DFPL-3213", this::triggerOnlyMigration,
         "DFPL-3306", this::triggerOnlyMigration,
         "DFPL-3292", this::triggerOnlyMigration,
-        "DFPL-3296", this::triggerOnlyMigration
+        "DFPL-3296", this::triggerOnlyMigration,
+        "DFPL-3346", this::triggerOnlyMigration,
+        "DFPL-3347", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -72,6 +80,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
         "DFPL-2423", this::filter2423,
         "DFPL-2423-rollback", this::filter2423Rollback
+        "DFPL-3213", this::filterDfpl3213
     );
 
     private EsQuery allCases() {
@@ -311,8 +320,29 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return !isEmpty(caseDetails.getData().get("proceeding"));
     }
 
+
     private boolean filter2423Rollback(CaseDetails caseDetails) {
         return !isEmpty(caseDetails.getData().get("proceedings"));
     }
+  
+    private boolean filterDfpl3213(CaseDetails caseDetails) {
+        if (isEmpty(caseDetails.getData().get(CASE_MANAGEMENT_LOCATION))) {
+            return false;
+        }
 
+        try {
+            Map<String, Object> location = objectMapper.convertValue(
+                caseDetails.getData().get(CASE_MANAGEMENT_LOCATION),
+                new TypeReference<>() {
+                }
+            );
+
+            // Accept the case ONLY if the baseLocation exists and matches Fleetwood's code (401452)
+            return location != null
+                && FLEETWOOD_COURT_CODE.equalsIgnoreCase(String.valueOf(location.get(BASE_LOCATION)));
+        } catch (Exception e) {
+            log.error("Failed to parse caseManagementLocation for case: {}", caseDetails.getId(), e);
+            return false;
+        }
+    }
 }
