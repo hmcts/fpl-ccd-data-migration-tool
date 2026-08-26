@@ -337,7 +337,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             // OR the transferred epimms id (102476)
             return location != null
                 && (FLEETWOOD_COURT_CODE.equalsIgnoreCase(String.valueOf(location.get(BASE_LOCATION)))
-                || TRANSFERRED_EPIMMS_ID.equalsIgnoreCase(String.valueOf(location.get(BASE_LOCATION))) );
+                || TRANSFERRED_EPIMMS_ID.equalsIgnoreCase(String.valueOf(location.get(BASE_LOCATION))));
         } catch (Exception e) {
             log.error("Failed to parse caseManagementLocation for case: {}", caseDetails.getId(), e);
             return false;
