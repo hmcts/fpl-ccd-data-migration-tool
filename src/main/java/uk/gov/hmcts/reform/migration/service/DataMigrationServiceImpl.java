@@ -79,7 +79,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
         "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
         "DFPL-2423", this::filter2423,
-        "DFPL-2423-rollback", this::filter2423Rollback
+        "DFPL-2423-rollback", this::filter2423Rollback,
         "DFPL-3213", this::filterDfpl3213
     );
 
@@ -324,7 +324,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private boolean filter2423Rollback(CaseDetails caseDetails) {
         return !isEmpty(caseDetails.getData().get("proceedings"));
     }
-  
+
     private boolean filterDfpl3213(CaseDetails caseDetails) {
         if (isEmpty(caseDetails.getData().get(CASE_MANAGEMENT_LOCATION))) {
             return false;
