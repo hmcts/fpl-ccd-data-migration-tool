@@ -60,8 +60,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-3306", this::triggerOnlyMigration,
         "DFPL-3292", this::triggerOnlyMigration,
         "DFPL-3296", this::triggerOnlyMigration,
-        "DFPL-3346", this::triggerOnlyMigration,
-        "DFPL-3347", this::triggerOnlyMigration
+        "DFPL-3213-v2", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -82,7 +81,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
         "DFPL-3213", this::filterDfpl3213,
         "DFPL-2421", this::filter2421,
-        "DFPL-2421-rollback", this::filter2421Rollback
+        "DFPL-2421-rollback", this::filter2421Rollback,
+        "DFPL-3213-v2", this::filterDfpl3213v2
     );
 
     private EsQuery allCases() {
@@ -323,6 +323,27 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private boolean filterDfpl3213(CaseDetails caseDetails) {
+        if (isEmpty(caseDetails.getData().get(CASE_MANAGEMENT_LOCATION))) {
+            return false;
+        }
+
+        try {
+            Map<String, Object> location = objectMapper.convertValue(
+                caseDetails.getData().get(CASE_MANAGEMENT_LOCATION),
+                new TypeReference<>() {
+                }
+            );
+
+            // Accept the case ONLY if the baseLocation exists and matches Fleetwood's code (401452)
+            return location != null
+                && FLEETWOOD_COURT_CODE.equalsIgnoreCase(String.valueOf(location.get(BASE_LOCATION)));
+        } catch (Exception e) {
+            log.error("Failed to parse caseManagementLocation for case: {}", caseDetails.getId(), e);
+            return false;
+        }
+    }
+
+    private boolean filterDfpl3213v2(CaseDetails caseDetails) {
         if (isEmpty(caseDetails.getData().get(CASE_MANAGEMENT_LOCATION))) {
             return false;
         }
