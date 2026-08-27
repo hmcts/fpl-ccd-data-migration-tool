@@ -350,6 +350,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             return false;
         }
     }
+
     private boolean filter2421Rollback(CaseDetails caseDetails) {
         return !isEmpty(caseDetails.getData().get("othersV2"));
     }
