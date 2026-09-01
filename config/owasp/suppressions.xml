@@ -14,7 +14,10 @@
   </suppress>
   <!--End of false positives section -->
 
-  <!--Please add all the temporary suppression under the below section
+  <!--Please add all the temporary suppression under the below section -->
   <suppress>
-  </suppress> -->
+    <notes>Nested dependency issue introduced from master</notes>
+    <cve>CVE-2026-59313</cve>
+    <cve>CVE-2026-59314</cve>
+  </suppress>
 </suppressions>
