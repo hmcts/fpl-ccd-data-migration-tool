@@ -16,6 +16,7 @@
 
   <!--Please add all the temporary suppression under the below section -->
   <suppress>
+    <notes>Nested dependency issue introduced from master</notes>
     <!-- spring-aop-6.2.19, spring-beans-6.2.19, spring-context-6.2.19, spring-context-support-6.2.19,
     spring-core-6.2.19, spring-expression-6.2.19, spring-jcl-6.2.19, spring-web-6.2.19 -->
     <cve>CVE-2026-59313</cve>
@@ -28,5 +29,7 @@
     spring-security-oauth2-client-6.5.11, spring-security-oauth2-core-6.5.11, spring-security-oauth2-jose-6.5.11,
     spring-security-oauth2-resource-server-6.5.11, spring-security-web-6.5.11 -->
     <cve>CVE-2026-59270</cve>
+    <!-- spring-cloud-commons-4.3.3, spring-cloud-context-4.3.3, spring-cloud-starter-4.3.3 -->
+    <cve>CVE-2026-59284</cve>
   </suppress>
 </suppressions>
