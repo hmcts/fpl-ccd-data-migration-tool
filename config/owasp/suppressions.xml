@@ -34,6 +34,8 @@
     spring-security-oauth2-resource-server-6.5.11, spring-security-web-6.5.11 -->
     <cve>CVE-2026-59270</cve>
     <cve>CVE-2026-59276</cve>
+    <cve>CVE-2026-47841</cve>
+    <cve>CVE-2026-47842</cve>
     <!-- spring-cloud-commons-4.3.3, spring-cloud-context-4.3.3, spring-cloud-starter-4.3.3 -->
     <cve>CVE-2026-59284</cve>
     <!-- spring-aop-6.2.19.jar, spring-beans-6.2.19.jar, spring-context-6.2.19.jar, spring-core-6.2.19.jar,
