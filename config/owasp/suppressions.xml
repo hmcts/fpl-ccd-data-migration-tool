@@ -31,5 +31,16 @@
     <cve>CVE-2026-59270</cve>
     <!-- spring-cloud-commons-4.3.3, spring-cloud-context-4.3.3, spring-cloud-starter-4.3.3 -->
     <cve>CVE-2026-59284</cve>
+    <!-- spring-aop-6.2.19.jar, spring-beans-6.2.19.jar, spring-context-6.2.19.jar, spring-core-6.2.19.jar,
+    spring-expression-6.2.19.jar, spring-jcl-6.2.19.jar, spring-web-6.2.19.jar-->
+    <cve>CVE-2026-47890</cve>
+    <cve>CVE-2026-47891</cve>
+    <cve>CVE-2026-59282</cve>
+    <cve>CVE-2026-59281</cve>
+    <!-- spring-security-config-6.5.11.jar, spring-security-crypto-6.5.11.jar,
+     spring-security-oauth2-client-6.5.11.jar, spring-security-oauth2-core-6.5.11.jar,
+      spring-security-oauth2-jose-6.5.11.jar, spring-security-oauth2-resource-server-6.5.11.jar,
+      spring-security-web-6.5.11.jar -->
+    <cve>CVE-2026-59276</cve>
   </suppress>
 </suppressions>
