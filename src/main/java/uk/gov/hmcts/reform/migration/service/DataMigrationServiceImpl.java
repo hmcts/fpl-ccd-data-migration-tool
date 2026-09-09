@@ -49,6 +49,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String CASE_MANAGEMENT_LOCATION = "caseManagementLocation";
     public static final String BASE_LOCATION =  "baseLocation";
     public static final String FLEETWOOD_COURT_CODE = "401452";
+    private static final String TRANSFERRED_EPIMMS_ID = "102476";
+    private static final String ORDERS = "orders";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-2423", this::triggerOnlyMigration,
@@ -58,8 +60,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-3306", this::triggerOnlyMigration,
         "DFPL-3292", this::triggerOnlyMigration,
         "DFPL-3296", this::triggerOnlyMigration,
-        "DFPL-3346", this::triggerOnlyMigration,
-        "DFPL-3347", this::triggerOnlyMigration
+        "DFPL-3213-v2", this::triggerOnlyMigration,
+        "DFPL-3361", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -78,9 +80,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
         "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
+        "DFPL-3213", this::filterDfpl3213,
         "DFPL-2423", this::filter2423,
-        "DFPL-2423-rollback", this::filter2423Rollback,
-        "DFPL-3213", this::filterDfpl3213
+        "DFPL-2423-rollback", this::filter2423Rollback
     );
 
     private EsQuery allCases() {
@@ -345,4 +347,38 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             return false;
         }
     }
+
+    private boolean filterDfpl3213v2(CaseDetails caseDetails) {
+        if (isEmpty(caseDetails.getData().get(CASE_MANAGEMENT_LOCATION))) {
+            return false;
+        }
+
+        try {
+            Map<String, Object> location = objectMapper.convertValue(
+                caseDetails.getData().get(CASE_MANAGEMENT_LOCATION),
+                new TypeReference<>() {
+                }
+            );
+
+            Map<String, Object> orders = objectMapper.convertValue(
+                caseDetails.getData().get(ORDERS),
+                new TypeReference<>() {
+                }
+            );
+
+            String ordersCourt = orders != null ? String.valueOf(orders.get(COURT)) : null;
+
+            return location != null
+                && TRANSFERRED_EPIMMS_ID.equalsIgnoreCase(String.valueOf(location.get(BASE_LOCATION)))
+                && "438".equalsIgnoreCase(ordersCourt);
+        } catch (Exception e) {
+            log.error("Failed to parse case details for case: {}", caseDetails.getId(), e);
+            return false;
+        }
+    }
+
+    private boolean filter2421Rollback(CaseDetails caseDetails) {
+        return !isEmpty(caseDetails.getData().get("othersV2"));
+    }
+
 }
