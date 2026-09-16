@@ -29,6 +29,13 @@
     <cve>CVE-2026-47891</cve>
     <cve>CVE-2026-59282</cve>
     <cve>CVE-2026-59281</cve>
+    <cve>CVE-2026-47883</cve>
+    <cve>CVE-2026-47884</cve>
+    <cve>CVE-2026-47885</cve>
+    <cve>CVE-2026-47886</cve>
+    <cve>CVE-2026-47887</cve>
+    <cve>CVE-2026-47888</cve>
+    <cve>CVE-2026-47889</cve>
     <!-- spring-security-core-6.5.11, spring-security-config-6.5.11, spring-security-crypto-6.5.11,
     spring-security-oauth2-client-6.5.11, spring-security-oauth2-core-6.5.11, spring-security-oauth2-jose-6.5.11,
     spring-security-oauth2-resource-server-6.5.11, spring-security-web-6.5.11 -->
