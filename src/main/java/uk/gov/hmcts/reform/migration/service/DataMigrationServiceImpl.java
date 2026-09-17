@@ -42,7 +42,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String STATE_RETURNED = "RETURNED";
     public static final String STATE_CLOSED = "CLOSED";
     public static final String STATE_DELETED = "Deleted";
-    public static final List<String> DFPL_2423_SOURCES =  List.of("proceeding", "proceedings");
 
 
     public static final String COURT = "court";
@@ -53,8 +52,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private static final String ORDERS = "orders";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-2423", this::triggerOnlyMigration,
-        "DFPL-2423-rollback", this::triggerOnlyMigration,
+        "DFPL-3363", this::triggerOnlyMigration,
         "DFPL-3290", this::triggerOnlyMigration,
         "DFPL-3213", this::triggerOnlyMigration,
         "DFPL-3306", this::triggerOnlyMigration,
@@ -66,23 +64,17 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-test", this.openCases(),
-        "DFPL-log", this.allNonDeletedCases(),
-        "DFPL-2423", this.allCases(),
-        "DFPL-2423-rollback", this.allCases()
+        "DFPL-log", this.allNonDeletedCases()
     );
 
     // ES fields to be fetched for each migration. "reference" and "jurisdiction are always fetched.
     private final  Map<String, List<String>> esSourceFields = Map.of(
-        "DFPL-test", List.of("court"),
-        "DFPL-2423", DFPL_2423_SOURCES,
-        "DFPL-2423-rollback", DFPL_2423_SOURCES
+        "DFPL-test", List.of("court")
     );
 
     private final Map<String, Predicate<CaseDetails>> predicates = Map.of(
         "DFPL-test", (caseDetails) -> !isEmpty(caseDetails.getData().get("court")),
-        "DFPL-3213", this::filterDfpl3213,
-        "DFPL-2423", this::filter2423,
-        "DFPL-2423-rollback", this::filter2423Rollback
+        "DFPL-3213", this::filterDfpl3213
     );
 
     private EsQuery allCases() {
@@ -318,15 +310,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         }
     }
 
-    private boolean filter2423(CaseDetails caseDetails) {
-        return !isEmpty(caseDetails.getData().get("proceeding"));
-    }
-
-
-    private boolean filter2423Rollback(CaseDetails caseDetails) {
-        return !isEmpty(caseDetails.getData().get("proceedings"));
-    }
-
     private boolean filterDfpl3213(CaseDetails caseDetails) {
         if (isEmpty(caseDetails.getData().get(CASE_MANAGEMENT_LOCATION))) {
             return false;
@@ -375,10 +358,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             log.error("Failed to parse case details for case: {}", caseDetails.getId(), e);
             return false;
         }
-    }
-
-    private boolean filter2421Rollback(CaseDetails caseDetails) {
-        return !isEmpty(caseDetails.getData().get("othersV2"));
     }
 
 }
