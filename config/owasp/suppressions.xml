@@ -62,6 +62,6 @@
     spring-security-crypto-6.5.11.jar, spring-security-oauth2-client-6.5.11.jar,
     spring-security-oauth2-core-6.5.11.jar, spring-security-oauth2-jose-6.5.11.jar,
     spring-security-oauth2-resource-server-6.5.11.jar, spring-security-web-6.5.11.jar -->
-    <cve>CVE-2026-21707</cve>
+    <cve>CVE-2026-41707</cve>
   </suppress>
 </suppressions>
