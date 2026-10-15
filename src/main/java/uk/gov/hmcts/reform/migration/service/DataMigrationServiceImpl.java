@@ -53,7 +53,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-3213-v2", this::triggerOnlyMigration,
-        "DFPL-3374", this::triggerOnlyMigration
+        "DFPL-3017", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
