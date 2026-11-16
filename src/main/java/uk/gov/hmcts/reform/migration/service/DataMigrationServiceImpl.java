@@ -55,6 +55,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-3213-v2", this::triggerOnlyMigration,
         "DFPL-3419", this::triggerOnlyMigration,
         "DFPL-3425", this::triggerOnlyMigration,
+        "DFPL-3405", this::triggerOnlyMigration,
         "DFPL-3407", this::triggerOnlyMigration
     );
 
