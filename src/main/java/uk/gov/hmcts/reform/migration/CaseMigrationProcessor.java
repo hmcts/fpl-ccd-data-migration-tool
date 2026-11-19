@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
@@ -36,6 +37,12 @@ public class CaseMigrationProcessor {
     public static final String EVENT_ID = "migrateCase";
     public static final String EVENT_SUMMARY = "Migrate Case";
     public static final String EVENT_DESCRIPTION = "Migrate Case";
+    public static final String CASE_FLAGS_MIGRATION_EVENT_ID = "migrateCaseFlags";
+    public static final String CASE_FLAGS_MIGRATION_EVENT_SUMMARY = "Migrate Case Flags";
+    public static final String CASE_FLAGS_MIGRATION_EVENT_DESCRIPTION = "Migrate Case Flags";
+    public static final String CASE_FLAGS_ROLLBACK_EVENT_ID = "rollbackCaseFlags";
+    public static final String CASE_FLAGS_ROLLBACK_EVENT_SUMMARY = "Rollback Case Flags";
+    public static final String CASE_FLAGS_ROLLBACK_EVENT_DESCRIPTION = "Rollback Case Flags";
     public static final String LOG_STRING = "-----------------------------------------";
 
     private final CoreCaseDataService coreCaseDataService;
@@ -47,6 +54,8 @@ public class CaseMigrationProcessor {
     private final int defaultThreadDelay;
     private final int timeout;
     private final String migrationId;
+    private final List<String> targetCaseIds;
+    private final List<String> caseIdsToSkip;
     private final String caseType;
     private final String jurisdiction;
 
@@ -66,6 +75,8 @@ public class CaseMigrationProcessor {
     private LocalDateTime startTime = now();
 
     private boolean retryFailures;
+    private final boolean caseFlagsV21Migration;
+    private final boolean migrationRollback;
 
     //@Autowired
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
@@ -76,9 +87,13 @@ public class CaseMigrationProcessor {
                                   @Value("${default.thread.limit:8}") int defaultThreadLimit,
                                   @Value("${default.thread.delay:0}") int defaultThreadDelay,
                                   @Value("${case-migration.processing.id}") String migrationId,
+                                  @Value("${targetCaseIds:}") String targetCaseIds,
+                                  @Value("${caseIdsToSkip:}") String caseIdsToSkip,
                                   @Value("${migration.jurisdiction}") String jurisdiction,
                                   @Value("${migration.caseType}") String caseType,
                                   @Value("${case-migration.retry_failures}") boolean retryFailures,
+                                  @Value("${case-migration.case_flags_v2_1:false}") boolean caseFlagsV21Migration,
+                                  @Value("${case-migration.rollback:false}") boolean migrationRollback,
                                   @Value("${case-migration.timeout:7200}") int timeout) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
@@ -88,9 +103,13 @@ public class CaseMigrationProcessor {
         this.defaultThreadLimit = defaultThreadLimit;
         this.defaultThreadDelay = defaultThreadDelay * 1000;
         this.migrationId = migrationId;
+        this.targetCaseIds = parseTargetCaseIds(targetCaseIds);
+        this.caseIdsToSkip = parseTargetCaseIds(caseIdsToSkip);
         this.jurisdiction = jurisdiction;
         this.caseType = caseType;
         this.retryFailures = retryFailures;
+        this.caseFlagsV21Migration = caseFlagsV21Migration;
+        this.migrationRollback = migrationRollback;
         this.threadPool = new ForkJoinPool(defaultThreadLimit);
         this.timeout = timeout;
 
@@ -129,9 +148,9 @@ public class CaseMigrationProcessor {
                 // we've removed our caseId from the queue - now need to process it
                 try {
                     coreCaseDataService.update(userToken,
-                        EVENT_ID,
-                        EVENT_SUMMARY,
-                        EVENT_DESCRIPTION,
+                        getEventId(),
+                        getEventSummary(),
+                        getEventDescription(),
                         caseType,
                         CaseDetails.builder()
                             .id(caseId)
@@ -338,7 +357,15 @@ public class CaseMigrationProcessor {
         }
 
         // Add them to the queue
-        casesToMigrate.addAll(caseIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+        List<Long> targetedCaseIds = caseIds.stream()
+            .filter(this::shouldProcessCase)
+            .map(Long::parseLong)
+            .collect(Collectors.toList());
+        if (targetedCaseIds.isEmpty()) {
+            log.info("No configured target case references were found in the supplied case list");
+            return;
+        }
+        casesToMigrate.addAll(targetedCaseIds);
         this.finishedLoading = true;
 
         // Wait for the threadpool to finish
@@ -367,7 +394,11 @@ public class CaseMigrationProcessor {
 
         cases.forEach((caseDetails) -> {
             Long caseId = caseDetails.getId();
-            if (filterFunc.test(caseDetails)) {
+            if (!isTargetCase(caseId.toString())) {
+                log.info("Skipping case {} as it is not in the target case reference list", caseId);
+            } else if (caseIdsToSkip.contains(caseId.toString())) {
+                log.info("Skipping case {} as it is in the case reference skip list", caseId);
+            } else if (filterFunc.test(caseDetails)) {
                 casesToMigrate.add(caseId);
             } else {
                 skippedCases.add(caseId);
@@ -379,6 +410,21 @@ public class CaseMigrationProcessor {
         return new BigDecimal(total).divide(new BigDecimal(defaultQuerySize), UP).intValue();
     }
 
+    private List<String> parseTargetCaseIds(String configuredTargetCaseIds) {
+        return Stream.of(configuredTargetCaseIds.split(","))
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .toList();
+    }
+
+    private boolean isTargetCase(String caseId) {
+        return targetCaseIds.isEmpty() || targetCaseIds.contains(caseId);
+    }
+
+    private boolean shouldProcessCase(String caseId) {
+        return isTargetCase(caseId) && !caseIdsToSkip.contains(caseId);
+    }
+
     private void publishStats(LocalDateTime startTime) {
         log.info(LOG_STRING);
         log.info(
@@ -386,10 +432,9 @@ public class CaseMigrationProcessor {
             getMigratedCases().size() + getFailedCases().size()
         );
 
-        String[] task = {"Migrated", "migrations"};
-        if ("DFPL-1124Rollback".equals(migrationId)) {
-            task = new String[]{"Rolled back", "rollbacks"};
-        }
+        String[] task = (caseFlagsV21Migration && migrationRollback) || "DFPL-1124Rollback".equals(migrationId)
+            ? new String[]{"Rolled back", "rollbacks"}
+            : new String[]{"Migrated", "migrations"};
 
         if (getMigratedCases().isEmpty()) {
             log.info("{} cases: NONE ", task[0]);
@@ -414,6 +459,27 @@ public class CaseMigrationProcessor {
         }
 
         log.info("Data migration start at {} and completed at {}", startTime, now());
+    }
+
+    private String getEventId() {
+        if (!caseFlagsV21Migration) {
+            return EVENT_ID;
+        }
+        return migrationRollback ? CASE_FLAGS_ROLLBACK_EVENT_ID : CASE_FLAGS_MIGRATION_EVENT_ID;
+    }
+
+    private String getEventSummary() {
+        if (!caseFlagsV21Migration) {
+            return EVENT_SUMMARY;
+        }
+        return migrationRollback ? CASE_FLAGS_ROLLBACK_EVENT_SUMMARY : CASE_FLAGS_MIGRATION_EVENT_SUMMARY;
+    }
+
+    private String getEventDescription() {
+        if (!caseFlagsV21Migration) {
+            return EVENT_DESCRIPTION;
+        }
+        return migrationRollback ? CASE_FLAGS_ROLLBACK_EVENT_DESCRIPTION : CASE_FLAGS_MIGRATION_EVENT_DESCRIPTION;
     }
 
 }

@@ -35,6 +35,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.CASE_FLAGS_MIGRATION_EVENT_DESCRIPTION;
+import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.CASE_FLAGS_MIGRATION_EVENT_ID;
+import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.CASE_FLAGS_MIGRATION_EVENT_SUMMARY;
+import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.CASE_FLAGS_ROLLBACK_EVENT_DESCRIPTION;
+import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.CASE_FLAGS_ROLLBACK_EVENT_ID;
+import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.CASE_FLAGS_ROLLBACK_EVENT_SUMMARY;
 import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.EVENT_DESCRIPTION;
 import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.EVENT_ID;
 import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.EVENT_SUMMARY;
@@ -89,8 +95,12 @@ class CaseMigrationProcessorTest {
             DEFAULT_THREAD_LIMIT,
             0,
             MIGRATION_ID,
+            "",
+            "",
             CASE_JURISDICTION,
             CASE_TYPE,
+            false,
+            false,
             false,
             300);
     }
@@ -119,6 +129,38 @@ class CaseMigrationProcessorTest {
             .contains(1L, 2L);
     }
 
+    @Test
+    void shouldOnlyMigrateTargetedCaseReferences() {
+        caseMigrationProcessor = createTargetedProcessor("1");
+        List<CaseDetails> cases = createCaseDetails(1, 2);
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
+            .thenReturn(cases);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(caseDetails -> true);
+
+        caseMigrationProcessor.migrateQuery(QUERY);
+
+        verify(coreCaseDataService).update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
+            eq(CASE_TYPE), caseDetailsArgumentCaptor.capture(), eq(MIGRATION_ID));
+        assertThat(caseDetailsArgumentCaptor.getValue().getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void shouldNotMigrateSkippedCaseReferences() {
+        caseMigrationProcessor = createSkippingProcessor("2");
+        List<CaseDetails> cases = createCaseDetails(1, 2);
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null, List.of()))
+            .thenReturn(cases);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+        when(dataMigrationService.accepts(MIGRATION_ID)).thenReturn(caseDetails -> true);
+
+        caseMigrationProcessor.migrateQuery(QUERY);
+
+        verify(coreCaseDataService).update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
+            eq(CASE_TYPE), caseDetailsArgumentCaptor.capture(), eq(MIGRATION_ID));
+        assertThat(caseDetailsArgumentCaptor.getValue().getId()).isEqualTo(1L);
+    }
+
     private List<CaseDetails> createCaseDetails(int start, int count) {
         return LongStream.range(start, start + count)
             .mapToObj(counter -> CaseDetails.builder()
@@ -126,6 +168,52 @@ class CaseMigrationProcessorTest {
                 .data(new HashMap<>())
                 .build())
             .collect(toList());
+    }
+
+    private CaseMigrationProcessor createCaseFlagsProcessor(boolean rollback) {
+        return new CaseMigrationProcessor(coreCaseDataService,
+            elasticSearchRepository,
+            idamRepository,
+            dataMigrationService,
+            DEFAUT_QUERY_SIZE,
+            DEFAULT_THREAD_LIMIT,
+            0,
+            MIGRATION_ID,
+            "",
+            "",
+            CASE_JURISDICTION,
+            CASE_TYPE,
+            false,
+            true,
+            rollback,
+            300);
+    }
+
+    private CaseMigrationProcessor createTargetedProcessor(String targetCaseIds) {
+        return createProcessor(targetCaseIds, "");
+    }
+
+    private CaseMigrationProcessor createSkippingProcessor(String caseIdsToSkip) {
+        return createProcessor("", caseIdsToSkip);
+    }
+
+    private CaseMigrationProcessor createProcessor(String targetCaseIds, String caseIdsToSkip) {
+        return new CaseMigrationProcessor(coreCaseDataService,
+            elasticSearchRepository,
+            idamRepository,
+            dataMigrationService,
+            DEFAUT_QUERY_SIZE,
+            DEFAULT_THREAD_LIMIT,
+            0,
+            MIGRATION_ID,
+            targetCaseIds,
+            caseIdsToSkip,
+            CASE_JURISDICTION,
+            CASE_TYPE,
+            false,
+            false,
+            false,
+            300);
     }
 
     @Test
@@ -155,6 +243,32 @@ class CaseMigrationProcessorTest {
                 eq(MIGRATION_ID));
 
         assertThat(caseDetailsArgumentCaptor.getValue().getId()).isEqualTo(1677777777L);
+    }
+
+    @Test
+    void shouldUseCaseFlagsMigrationEventWhenCaseFlagsV21MigrationIsEnabled() {
+        caseMigrationProcessor = createCaseFlagsProcessor(false);
+
+        caseMigrationProcessor.migrateList(List.of("12345"));
+
+        verify(coreCaseDataService).update(eq(USER_TOKEN),
+            eq(CASE_FLAGS_MIGRATION_EVENT_ID),
+            eq(CASE_FLAGS_MIGRATION_EVENT_SUMMARY),
+            eq(CASE_FLAGS_MIGRATION_EVENT_DESCRIPTION),
+            eq(CASE_TYPE), any(), eq(MIGRATION_ID));
+    }
+
+    @Test
+    void shouldUseCaseFlagsRollbackEventWhenRollbackIsEnabled() {
+        caseMigrationProcessor = createCaseFlagsProcessor(true);
+
+        caseMigrationProcessor.migrateList(List.of("12345"));
+
+        verify(coreCaseDataService).update(eq(USER_TOKEN),
+            eq(CASE_FLAGS_ROLLBACK_EVENT_ID),
+            eq(CASE_FLAGS_ROLLBACK_EVENT_SUMMARY),
+            eq(CASE_FLAGS_ROLLBACK_EVENT_DESCRIPTION),
+            eq(CASE_TYPE), any(), eq(MIGRATION_ID));
     }
 
     @Test
@@ -216,8 +330,12 @@ class CaseMigrationProcessorTest {
             DEFAULT_THREAD_LIMIT,
             0,
             "Test",
+            "",
+            "",
             CASE_JURISDICTION,
             null,
+            false,
+            false,
             false,
             300);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
@@ -234,8 +352,12 @@ class CaseMigrationProcessorTest {
             DEFAULT_THREAD_LIMIT,
             0,
             "Test",
+            "",
+            "",
             CASE_JURISDICTION,
             CASE_TYPE,
+            false,
+            false,
             false,
             300);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(null))
@@ -261,8 +383,12 @@ class CaseMigrationProcessorTest {
             1,                  // single thread - one migration at a time
             20,                 // 20 seconds between each migration
             MIGRATION_ID,
+            "",
+            "",
             CASE_JURISDICTION,
             CASE_TYPE,
+            false,
+            false,
             false,
             10);                // timeout in 10 seconds, should only migrate one case
 
@@ -301,8 +427,12 @@ class CaseMigrationProcessorTest {
             DEFAULT_THREAD_LIMIT,
             0,
             null,
+            "",
+            "",
             CASE_JURISDICTION,
             CASE_TYPE,
+            false,
+            false,
             false,
             300);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
