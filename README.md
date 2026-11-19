@@ -68,9 +68,25 @@ case-migration.timeout=${CASE_MIGRATION_TIMEOUT:7200} # global timeout for the m
 case-migration.case_id_list.mapping=${CASE_ID_LIST_MAPPING:} # format DFPL-ID=>CASEID1|CASEID2|CASEID3;DFPL-ID2=>CASEID4
 case-migration.use_case_id_mapping=${USE_CASE_ID_MAPPING:true} # whether to use the mapping or the ES query - if false make sure to have an ES query in DataMigrationServiceImpl
 case-migration.retry_failures=${RETRY_FAILURES:false} # whether to retry failed cases
+targetCaseIds=${TARGET_CASE_IDS:} # comma-separated CCD case references to run; blank runs all selected cases
+caseIdsToSkip=${CASE_IDS_TO_SKIP:} # comma-separated CCD case references to exclude; takes precedence over targetCaseIds
+case-migration.case_flags_v2_1=${CASE_FLAGS_V2_1_MIGRATION:false} # use the Case Flags v2.1 CCD events
+case-migration.rollback=${MIGRATION_ROLLBACK:false} # use rollbackCaseFlags; applies when Case Flags v2.1 migration is enabled
 
 default.thread.delay=${DEFAULT_THREAD_DELAY:0} # whether to artificially slow down the tool by sleeping a thread after a successful migration (seconds) default = no delay
 ```
+
+### Case Flags v2.1 migration
+
+Set `CASE_FLAGS_V2_1_MIGRATION=true` to submit the `migrateCaseFlags` event defined in
+`fpl-ccd-configuration`. Set `MIGRATION_ROLLBACK=true` as well to submit `rollbackCaseFlags`
+instead. Both settings default to `false`, so existing migrations continue to use `migrateCase`.
+
+For the temporary all-FPL-cases migration, set `MIGRATION_ID=DFPL-CASE-FLAGS-V2_1` and
+`USE_CASE_ID_MAPPING=false`. Its Elasticsearch query has no state or field restriction, so it
+pages through every `CARE_SUPERVISION_EPO` case. `TARGET_CASE_IDS` and `CASE_IDS_TO_SKIP` can
+then narrow the cases processed locally.
+
 
 ## Common issues
 

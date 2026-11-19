@@ -19,6 +19,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
+import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.CASE_FLAGS_V21_MIGRATION_ID;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -54,6 +55,14 @@ class DataMigrationServiceImplTest {
     @Test
     void shouldReturnTrueByDefault() {
         assertThat(dataMigrationService.accepts("someMigrationId").test(caseDetails)).isTrue();
+    }
+
+    @Test
+    void shouldConfigureAnAllCasesQueryForCaseFlagsV21Migration() {
+        dataMigrationService.validateMigrationId(CASE_FLAGS_V21_MIGRATION_ID);
+
+        assertThat(dataMigrationService.getQuery(CASE_FLAGS_V21_MIGRATION_ID).toMap())
+            .isEqualTo(Map.of("bool", Map.of()));
     }
 
     @Test

@@ -42,7 +42,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String STATE_RETURNED = "RETURNED";
     public static final String STATE_CLOSED = "CLOSED";
     public static final String STATE_DELETED = "Deleted";
-
+    public static final String CASE_FLAGS_V21_MIGRATION_ID = "DFPL-CASE-FLAGS-V2_1";
 
     public static final String COURT = "court";
     public static final String CASE_MANAGEMENT_LOCATION = "caseManagementLocation";
@@ -56,12 +56,14 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-3419", this::triggerOnlyMigration,
         "DFPL-3425", this::triggerOnlyMigration,
         "DFPL-3405", this::triggerOnlyMigration,
-        "DFPL-3407", this::triggerOnlyMigration
+        "DFPL-3407", this::triggerOnlyMigration,
+        CASE_FLAGS_V21_MIGRATION_ID, this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-test", this.openCases(),
-        "DFPL-log", this.allNonDeletedCases()
+        "DFPL-log", this.allNonDeletedCases(),
+        CASE_FLAGS_V21_MIGRATION_ID, this.allCases()
     );
 
     // ES fields to be fetched for each migration. "reference" and "jurisdiction are always fetched.
